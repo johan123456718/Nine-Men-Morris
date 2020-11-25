@@ -4,21 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/activity_game"
     tools:context=".GameActivity">
 
-    <ImageView
-        android:id="@+id/board"
-        android:layout_width="325dp"
+    <com.example.nine_men_morris.CustomView
+        android:layout_width="match_parent"
         android:layout_height="325dp"
-        android:src="@mipmap/nnm"
-        android:layout_centerInParent="true"
-        />
+         />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:text="PRINT KEBAB" />
 
 </RelativeLayout>
