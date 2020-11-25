@@ -1,6 +1,7 @@
 package com.example.nine_men_morris.model;
 
 
+import android.util.Log;
 
 /**
  * @author Jonas WÂhslÈn, jwi@kth.se.
@@ -41,6 +42,7 @@ public class NineMenMorrisRules {
 
     /**
      * Returns true if a move is successful
+     *
      */
     public boolean legalMove(int To, int From, int color) {
         if (color == turn) {
@@ -180,7 +182,7 @@ public class NineMenMorrisRules {
     }
 
     /**
-     * Returns EMPTY_SPACE = 0 BLUE_MARKER = 4 READ_MARKER = 5
+     * Returns EMPTY_SPACE = 0 BLUE_MARKER = 4 RED_MARKER = 5
      */
     public int board(int From) {
         return gameplan[From];
@@ -244,5 +246,13 @@ public class NineMenMorrisRules {
                 return (from == 3 || from == 21 || from == 23);
         }
         return false;
+    }
+
+    public int getTurn() {
+        return turn;
+    }
+
+    public void setTurn(int turn) {
+        this.turn = turn;
     }
 }
