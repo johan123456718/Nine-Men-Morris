@@ -3,8 +3,15 @@ package com.example.nine_men_morris;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Window;
 import android.widget.ImageView;
 
 import com.example.nine_men_morris.model.NineMenMorrisRules;
@@ -16,19 +23,26 @@ public class GameActivity extends AppCompatActivity {
 
     private NineMenMorrisRules rules;
 
+    //private ImageView board;
+
+    Bitmap bg, blueChecker, redChecker;
+
+   private CustomView customView;
+    private Canvas canvas;
+
+    private Bitmap map;
+
+    GameView gameView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_game);
-        rules = new NineMenMorrisRules();
-    }
 
-    @Override
-    protected void onStart(){
-        super.onStart();
-        Log.d("Test", "isLegalMove: "  + rules.legalMove(1, 0 , 2));
-        Log.d("Test", "isLegalMove: "  + rules.legalMove(2, 0 , 1));
-    }
+        this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 
+        gameView = new GameView(this);
+
+        setContentView(gameView);
+    }
 
 }

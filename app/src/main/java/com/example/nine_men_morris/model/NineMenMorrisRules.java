@@ -10,7 +10,7 @@ package com.example.nine_men_morris.model;
 /*
  * The game board positions
  *
- * 03           06           09
+ * 03          06           09
  *     02       05       08
  *         01   04   07
  * 24  23  22        10  11  12
