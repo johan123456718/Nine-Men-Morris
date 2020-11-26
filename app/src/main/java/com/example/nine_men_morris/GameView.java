@@ -82,21 +82,26 @@ public class GameView extends View {
 
         paint.setColor(Color.BLACK);
         paint.setTextSize(50);
-        canvas.drawText("Red markers placed: " + (playerRed.getMoves().size()), 100, 150, paint);
-        canvas.drawText("Blue markers placed: " + (playerBlue.getMoves().size()), 100, 200, paint);
+
+        canvas.drawText("Red markers to place: " + (9 - playerRed.getNrOfMarkersPlaced()), 100, 150, paint);
+        canvas.drawText("Blue markers to place: " + (9 - playerBlue.getNrOfMarkersPlaced()), 100, 200, paint);
+
+        canvas.drawText("Red markers on board: " + (playerRed.getMoves().size()), 100, 300, paint);
+        canvas.drawText("Blue markers on board: " + (playerBlue.getMoves().size()), 100, 350, paint);
+
         if(rules.getTurn() == 2) {
-            canvas.drawText("Red's turn", 100, 300, paint);
+            canvas.drawText("Red's turn", 100, 400, paint);
         }else if(rules.getTurn() == 1){
-            canvas.drawText("Blue's turn", 100, 300, paint);
+            canvas.drawText("Blue's turn", 100, 400, paint);
         }
 
         if(state == 1) {
             if (rules.remove(placeInBoard) && rules.getTurn() == 2) {
-                canvas.drawText("Red can remove", 100, 400, paint);
+                canvas.drawText("Red can remove", 100, 450, paint);
             }
 
             if (rules.remove(placeInBoard) && rules.getTurn() == 1) {
-                canvas.drawText("Blue can remove", 100, 400, paint);
+                canvas.drawText("Blue can remove", 100, 450, paint);
             }
         }
 
