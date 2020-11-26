@@ -45,4 +45,8 @@ public class GameActivity extends AppCompatActivity {
         setContentView(gameView);
     }
 
+    public void gameFinished(){
+
+    }
+
 }

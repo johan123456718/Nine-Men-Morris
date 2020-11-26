@@ -2,6 +2,7 @@ package com.example.nine_men_morris;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -10,7 +11,6 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.Display;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -28,7 +28,8 @@ public class GameView extends View {
 
     int state;
 
-    Player player1, player2;
+    Context context;
+    Player playerRed, playerBlue;
 
     int height, width, placeInBoard, moveTo, moveFrom;
 
@@ -36,6 +37,7 @@ public class GameView extends View {
 
     public GameView(Context context) {
         super(context);
+        this.context = context;
         DisplayMetrics displayMetrics = new DisplayMetrics();
         ((Activity) getContext()).getWindowManager()
                 .getDefaultDisplay()
@@ -43,8 +45,8 @@ public class GameView extends View {
         height = displayMetrics.heightPixels;
         width = displayMetrics.widthPixels;
 
-        player1 = new Player(2); //RED
-        player2 = new Player(1); //Blue
+        playerRed = new Player(2); //RED
+        playerBlue = new Player(1); //Blue
 
         state = 0;
 
@@ -73,19 +75,19 @@ public class GameView extends View {
 
 
 
-        if((player1.getMoves().size() > 0) && (player2.getMoves().size() >0)){
+       /* if((player1.getMoves().size() > 0) && (player2.getMoves().size() >0)){
             Log.d("draw", "onDraw: player1: " + player1.getMoves().get(player1.getMoves().size()-1));
             Log.d("draw", "onDraw: player2: " + player2.getMoves().get(player2.getMoves().size()-1));
-        }
+        }*/
 
-        for(int i= 0; i < player1.getMoves().size(); i++){
+        for(int i = 0; i < playerRed.getMoves().size(); i++){
             paint.setColor(Color.RED);
-            canvas.drawRect(validPlaces.get(player1.getMoves().get(i)-1) , paint);
+            canvas.drawRect(validPlaces.get(playerRed.getMoves().get(i)-1) , paint);
 
         }
-        for(int i= 0; i< player2.getMoves().size(); i++){
+        for(int i = 0; i< playerBlue.getMoves().size(); i++){
             paint.setColor(Color.BLUE);
-            canvas.drawRect(validPlaces.get(player2.getMoves().get(i)-1) , paint);
+            canvas.drawRect(validPlaces.get(playerBlue.getMoves().get(i)-1) , paint);
 
         }
 
@@ -101,23 +103,27 @@ public class GameView extends View {
             case MotionEvent.ACTION_MOVE:
             case MotionEvent.ACTION_UP:
             if (state != 1){
-                if ((player1.getNrOfMarkersPlaced() < 9) || (player2.getNrOfMarkersPlaced() < 9)) {
-                    if (rules.getTurn() == 1) {
+                Log.d("TAG", "onTouchEvent: JAG ÄR I STATE 0" + " det är röd: 2 , blå: 1 s tur" + rules.getTurn());
+                if ((playerRed.getNrOfMarkersPlaced() < 9) || (playerBlue.getNrOfMarkersPlaced() < 9)) {
+                    if (rules.getTurn() == 1) { //b´lås tur
                         if (checkValid() && rules.legalMove(placeInBoard, moveTo, 1)) {
-                            player2.getMoves().add(placeInBoard);
-                            player2.setNrOfMarkersPlaced(player2.getNrOfMarkersPlaced() + 1);
+                            playerBlue.getMoves().add(placeInBoard);
+                            playerBlue.setNrOfMarkersPlaced(playerBlue.getNrOfMarkersPlaced() + 1);
                             invalidate();
                             if(rules.remove(placeInBoard)){
                                 state = 1;
+                                rules.setTurn(1);
                             }
                         }
                     } else {
                         if (checkValid() && rules.legalMove(placeInBoard, moveTo, 2)) {
-                            player1.getMoves().add(placeInBoard);
-                            player1.setNrOfMarkersPlaced(player1.getNrOfMarkersPlaced() + 1);
+                            playerRed.getMoves().add(placeInBoard);
+                            playerRed.setNrOfMarkersPlaced(playerRed.getNrOfMarkersPlaced() + 1);
                             invalidate();
                             if(rules.remove(placeInBoard)){
+                                Log.d("TAG", "onTouchEvent: ");
                                 state = 1;
+                                rules.setTurn(2);
                             }
                         }
                     }
@@ -126,116 +132,92 @@ public class GameView extends View {
                     if (rules.getTurn() == 1) {
                         if (moveTo != 0) {
                             if (checkValid() && rules.legalMove(placeInBoard, moveTo, 1)) {
-                                //Log.d("TAG", "onTouchEvent: movefrom: " + moveFrom);
-                                for (int i = 0; i < player2.getMoves().size(); i++) {
-                                    int tmp = player2.getMoves().get(i);
+                                for (int i = 0; i < playerBlue.getMoves().size(); i++) {
+                                    int tmp = playerBlue.getMoves().get(i);
                                     if (moveFrom == tmp) {
-                                        //Log.d("TAG", "onTouchEvent: jag kom in blå" + " movefrom: " + moveFrom);
-                                        player2.getMoves().remove(i);
+                                        playerBlue.getMoves().remove(i);
                                         rules.remove(moveFrom, 4);
                                     }
                                 }
-                                player2.getMoves().add(placeInBoard);
-                              //  Log.d("TAG", "onTouchEventPart2Blue: " + placeInBoard);
+                                playerBlue.getMoves().add(placeInBoard);
                                 moveTo = 0;
                                 moveFrom = 0;
                                 invalidate();
                                 if(rules.remove(placeInBoard)){
                                     state = 1;
+                                    rules.setTurn(1);
                                 }
                             } else {
                                 moveTo = 0;
                                 moveFrom = 0;
                             }
                         } else {
-                           // Log.d("tag", " test board: " + rules.board(placeInBoard));
                             if (checkValid() && (rules.board(placeInBoard) == 4)) {
                                 moveTo = placeInBoard;
                                 moveFrom = placeInBoard;
-                                //Log.d("tag", "onTouchEvent: jag ssätterr moves " + moveFrom);
-                            } else {
-                                // Log.d("tag", "onTouchEvent: FAULTY MOVE MISTER");
-
                             }
                         }
 
-                    } else if (state != 0) {
-                      //  Log.d("tag", "onTouchEvent: röd spelare");
+                    } else { // if (state != 0)
                         if (moveTo != 0) {
                             if (checkValid() && rules.legalMove(placeInBoard, moveTo, 2)) {
-                             //   Log.d("TAG", "onTouchEvent: movefrom: " + moveFrom);
-                                for (int i = 0; i < player1.getMoves().size(); i++) {
-                                    int tmp = player1.getMoves().get(i);
+                                for (int i = 0; i < playerRed.getMoves().size(); i++) {
+                                    int tmp = playerRed.getMoves().get(i);
                                     if (moveFrom == tmp) {
-                                    //    Log.d("TAG", "onTouchEvent: jag kom in röd" + player1.getMoves().size() + " movefrom: " + moveFrom);
-                                        player1.getMoves().remove(i);
+                                        playerRed.getMoves().remove(i);
                                         rules.remove(moveFrom, 5);
-                                     //   Log.d("TAG", "onTouchEvent: jag kom in röd efter" + player1.getMoves().size());
                                     }
                                 }
-                              //  Log.d("MoveTo", "Move to before: " + moveTo);
-                                player1.getMoves().add(placeInBoard);
-                             //   Log.d("MoveTo", "Move to After: " + player1.getMoves().get(player1.getMoves().size() - 1));
-                                // Log.d("TAG", "onTouchEventPart2Red: " + placeInBoard);
+                                playerRed.getMoves().add(placeInBoard);
                                 moveTo = 0;
                                 moveFrom = 0;
                                 invalidate();
                                 if(rules.remove(placeInBoard)){
                                     state = 1;
+                                    rules.setTurn(2);
                                 }
                             } else {
                                 moveTo = 0;
                                 moveFrom = 0;
                             }
-                        } else {
-                          //  Log.d("TAG", "onTouchEvent: " + placeInBoard + " board: " + rules.board(placeInBoard) + " moveto: " + moveTo);
-                            if (checkValid() && (rules.board(placeInBoard) == 5)) {
+                        } else if (checkValid() && (rules.board(placeInBoard) == 5)) {
                                 moveTo = placeInBoard;
                                 moveFrom = placeInBoard;
-                          //      Log.d("TAG", "onTouchEvent: jag ssätterr moves " + moveFrom);
-                            } else {
-
                             }
                         }
                     }
                 }
-            }else{
-                if(rules.remove(placeInBoard) && (rules.getTurn() == 2)){
-                  //  Log.d("TAG", "hejhej");
-                   // Log.d("TAG", "placeInBoard: " + placeInBoard);
-                    rules.setTurn(1);
-                    //Log.d("TAG", "Turn: " + rules.getTurn());
-                    if(checkValid() && (rules.board(placeInBoard) == 5)){ // händer aldrig
-                      //  Log.d("TAG", "onTouchEvent: Jag kan ta bort någotn");
-                        rules.setTurn(2);
-                        for(int i = 0; i < player1.getMoves().size(); i++) {
-                            int tmp = player1.getMoves().get(i);
-                        //    Log.d("TAG", "MoveFrom: " + placeInBoard);
-                          //  Log.d("TAG", "TMP: " + tmp);
-                            if(placeInBoard == tmp) {
-                            //    Log.d("TAG", "onTouchEvent: Jag kan ta bort någotn part 2");
-                                player1.getMoves().remove(i);
+
+            else if(state == 1){
+                Log.d("TAG", "onTouchEvent: JAG ÄR I STATE 1");
+                Log.d("TAG", "onTouchEvent: turn: " + rules.getTurn());
+                if(rules.remove(placeInBoard) && (rules.getTurn() == 1)){
+                    Log.d("TAG", "hejhej");
+                   // rules.setTurn(2);
+                    if(checkValid() && (rules.board(placeInBoard) == 5)){
+                        for(int i = 0; i < playerRed.getMoves().size(); i++) {
+                            int tmp = playerRed.getMoves().get(i);
+                            Log.d("TAG", "MoveFrom: " + placeInBoard);
+                            Log.d("TAG", "TMP: " + tmp);
+                            if(tmp == placeInBoard) {
+                                Log.d("TAG", "onTouchEvent: Jag kan ta bort någotn part 2 som blå");
+                                rules.setTurn(2);
+                                playerRed.getMoves().remove(i);
                                 rules.remove(placeInBoard, 5);
                                 state = 0;
-                                rules.setTurn(2);
                                 invalidate();
                             }
                         }
                     }
-                } if(rules.remove(placeInBoard) && (rules.getTurn() == 1)){
-                    //Log.d("TAG", "hejdå");
-                    //Log.d("TAG", "placeInBoard2: " + rules.board(placeInBoard));
-                    rules.setTurn(2);
-                    //Log.d("TAG", "Turn: " + rules.getTurn());
+                } else if(rules.remove(placeInBoard) && (rules.getTurn() == 2)){
+                    Log.d("TAG", "hejdå");
+                    //rules.setTurn(1);
                     if(checkValid() && (rules.board(placeInBoard) == 4)){ // händer aldrig
-                        //Log.d("TAG", "onTouchEvent: Jag kan ta bort någotn2");
-                        for(int i = 0; i < player2.getMoves().size(); i++) {
-                            int tmp = player2.getMoves().get(i);
-                            Log.d("TAG", "MoveFrom: " + placeInBoard);
-                            Log.d("TAG", "TMP: " + tmp);
-                            if(placeInBoard == tmp) {
-                                Log.d("TAG", "onTouchEvent: Jag kan ta bort någotn part 2");
-                                player2.getMoves().remove(i);
+                        for(int i = 0; i < playerBlue.getMoves().size(); i++) {
+                            int tmp = playerBlue.getMoves().get(i);
+                            if(tmp == placeInBoard) {
+                                Log.d("TAG", "onTouchEvent: Jag kan ta bort någotn part 2 som röd");
+                                playerBlue.getMoves().remove(i);
                                 rules.remove(placeInBoard, 4);
                                 state = 0;
                                 rules.setTurn(1);
@@ -245,7 +227,9 @@ public class GameView extends View {
                     }
                 }
             }
-
+                if (checWin(playerBlue) || checWin(playerRed)){
+                    gameFinished();
+                }
 
                 return true; // event consumed (including ACTION_DOWN)
             default:
@@ -253,10 +237,20 @@ public class GameView extends View {
         }
     }
 
+    private void gameFinished(){
+       context.
+
+    }
+
+    private boolean checWin(Player color){
+        if((color.getMoves().size() < 3) && (color.getNrOfMarkersPlaced() == 9)){
+            return true;
+        }
+        else return false;
+    }
 
     private boolean checkValid(){
         boolean validity = false;
-      //  Log.d("tag", "checkValid: " + placeInBoard);
         for(int i = 0; i < validPlaces.size(); i++){
             if ((validPlaces.get(i).left <= touchedX ) && (validPlaces.get(i).top >= touchedY) && (validPlaces.get(i).right >= touchedX) && (validPlaces.get(i).bottom <= touchedY)){
                 validity = true;
@@ -269,7 +263,6 @@ public class GameView extends View {
                 placeInBoard = i+1;
             }
         }
-       // Log.d("tag", "checkValidUT: " + placeInBoard);
         return validity;
     }
 
