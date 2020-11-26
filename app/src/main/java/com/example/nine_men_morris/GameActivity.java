@@ -21,18 +21,7 @@ import com.example.nine_men_morris.model.NineMenMorrisRules;
  */
 public class GameActivity extends AppCompatActivity {
 
-    private NineMenMorrisRules rules;
-
-    //private ImageView board;
-
-    Bitmap bg, blueChecker, redChecker;
-
-   private CustomView customView;
-    private Canvas canvas;
-
-    private Bitmap map;
-
-    GameView gameView;
+    private GameView gameView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
