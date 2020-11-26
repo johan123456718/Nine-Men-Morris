@@ -2,7 +2,6 @@ package com.example.nine_men_morris;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -10,7 +9,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -22,7 +20,7 @@ import java.util.ArrayList;
 public class GameView extends View {
 
     NineMenMorrisRules rules;
-    Bitmap bg, blueChecker, redChecker;
+    Bitmap bg;
     Rect rect;
     ArrayList<Rect> validPlaces;
 
@@ -47,7 +45,6 @@ public class GameView extends View {
 
         playerRed = new Player(2); //RED
         playerBlue = new Player(1); //Blue
-
         state = 0;
 
         moveTo = 0;
@@ -68,17 +65,10 @@ public class GameView extends View {
         super.onDraw(canvas);
         Paint paint = new Paint();
         paint.setColor(Color.rgb(251,251,203));
-
         canvas.drawRect(0,0,width, height, paint);
+
         //Draw background
         canvas.drawBitmap(bg,null,rect,null);
-
-
-
-       /* if((player1.getMoves().size() > 0) && (player2.getMoves().size() >0)){
-            Log.d("draw", "onDraw: player1: " + player1.getMoves().get(player1.getMoves().size()-1));
-            Log.d("draw", "onDraw: player2: " + player2.getMoves().get(player2.getMoves().size()-1));
-        }*/
 
         for(int i = 0; i < playerRed.getMoves().size(); i++){
             paint.setColor(Color.RED);
@@ -88,7 +78,26 @@ public class GameView extends View {
         for(int i = 0; i< playerBlue.getMoves().size(); i++){
             paint.setColor(Color.BLUE);
             canvas.drawRect(validPlaces.get(playerBlue.getMoves().get(i)-1) , paint);
+        }
 
+        paint.setColor(Color.BLACK);
+        paint.setTextSize(50);
+        canvas.drawText("Red markers placed: " + (playerRed.getMoves().size()), 100, 150, paint);
+        canvas.drawText("Blue markers placed: " + (playerBlue.getMoves().size()), 100, 200, paint);
+        if(rules.getTurn() == 2) {
+            canvas.drawText("Red's turn", 100, 300, paint);
+        }else if(rules.getTurn() == 1){
+            canvas.drawText("Blue's turn", 100, 300, paint);
+        }
+
+        if(state == 1) {
+            if (rules.remove(placeInBoard) && rules.getTurn() == 2) {
+                canvas.drawText("Red can remove", 100, 400, paint);
+            }
+
+            if (rules.remove(placeInBoard) && rules.getTurn() == 1) {
+                canvas.drawText("Blue can remove", 100, 400, paint);
+            }
         }
 
     }
@@ -100,10 +109,8 @@ public class GameView extends View {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 return true;
-            case MotionEvent.ACTION_MOVE:
             case MotionEvent.ACTION_UP:
             if (state != 1){
-                Log.d("TAG", "onTouchEvent: JAG ÄR I STATE 0" + " det är röd: 2 , blå: 1 s tur" + rules.getTurn());
                 if ((playerRed.getNrOfMarkersPlaced() < 9) || (playerBlue.getNrOfMarkersPlaced() < 9)) {
                     if (rules.getTurn() == 1) { //b´lås tur
                         if (checkValid() && rules.legalMove(placeInBoard, moveTo, 1)) {
@@ -121,7 +128,6 @@ public class GameView extends View {
                             playerRed.setNrOfMarkersPlaced(playerRed.getNrOfMarkersPlaced() + 1);
                             invalidate();
                             if(rules.remove(placeInBoard)){
-                                Log.d("TAG", "onTouchEvent: ");
                                 state = 1;
                                 rules.setTurn(2);
                             }
@@ -189,18 +195,12 @@ public class GameView extends View {
                 }
 
             else if(state == 1){
-                Log.d("TAG", "onTouchEvent: JAG ÄR I STATE 1");
-                Log.d("TAG", "onTouchEvent: turn: " + rules.getTurn());
                 if(rules.remove(placeInBoard) && (rules.getTurn() == 1)){
-                    Log.d("TAG", "hejhej");
                    // rules.setTurn(2);
                     if(checkValid() && (rules.board(placeInBoard) == 5)){
                         for(int i = 0; i < playerRed.getMoves().size(); i++) {
                             int tmp = playerRed.getMoves().get(i);
-                            Log.d("TAG", "MoveFrom: " + placeInBoard);
-                            Log.d("TAG", "TMP: " + tmp);
                             if(tmp == placeInBoard) {
-                                Log.d("TAG", "onTouchEvent: Jag kan ta bort någotn part 2 som blå");
                                 rules.setTurn(2);
                                 playerRed.getMoves().remove(i);
                                 rules.remove(placeInBoard, 5);
@@ -210,13 +210,12 @@ public class GameView extends View {
                         }
                     }
                 } else if(rules.remove(placeInBoard) && (rules.getTurn() == 2)){
-                    Log.d("TAG", "hejdå");
                     //rules.setTurn(1);
-                    if(checkValid() && (rules.board(placeInBoard) == 4)){ // händer aldrig
+                    if(checkValid() && (rules.board(placeInBoard) == 4)){
+
                         for(int i = 0; i < playerBlue.getMoves().size(); i++) {
                             int tmp = playerBlue.getMoves().get(i);
                             if(tmp == placeInBoard) {
-                                Log.d("TAG", "onTouchEvent: Jag kan ta bort någotn part 2 som röd");
                                 playerBlue.getMoves().remove(i);
                                 rules.remove(placeInBoard, 4);
                                 state = 0;
@@ -227,7 +226,7 @@ public class GameView extends View {
                     }
                 }
             }
-                if (checWin(playerBlue) || checWin(playerRed)){
+                if (checkWin(playerBlue) || checkWin(playerRed)){
                     gameFinished();
                 }
 
@@ -238,11 +237,10 @@ public class GameView extends View {
     }
 
     private void gameFinished(){
-       context.
 
     }
 
-    private boolean checWin(Player color){
+    private boolean checkWin(Player color){
         if((color.getMoves().size() < 3) && (color.getNrOfMarkersPlaced() == 9)){
             return true;
         }
