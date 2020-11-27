@@ -8,11 +8,17 @@ public class Player {
     private int colorID;
     private ArrayList<Integer> moves;
     private int nrOfMarkersPlaced;
+    private int movePieceTo;
+    private int movePieceFrom;
+    private int nrOfMarkers;
 
     public Player(int colorID){
         this.colorID = colorID;
         this.moves = new ArrayList<>();
         this.nrOfMarkersPlaced = 0;
+        this.movePieceTo = 0;
+        this.movePieceFrom = 0;
+        this.nrOfMarkers = 9;
     }
 
     public int getNrOfMarkersPlaced() {
@@ -27,16 +33,31 @@ public class Player {
         return moves;
     }
 
-    public void setColorID(int colorID) {
-        this.colorID = colorID;
-    }
-
     public int getColorID() {
         return colorID;
     }
 
-    public void setMoves(ArrayList<Integer> moves) {
-        this.moves = moves;
+    public int getMovePieceFrom() {
+        return movePieceFrom;
     }
 
+    public int getMovePieceTo() {
+        return movePieceTo;
+    }
+
+    public void setMovePieceFrom(int movePieceFrom) {
+        this.movePieceFrom = movePieceFrom;
+    }
+
+    public void setMovePieceTo(int movePieceTo) {
+        this.movePieceTo = movePieceTo;
+    }
+
+    public int getNrOfMarkers() {
+        return nrOfMarkers;
+    }
+
+    public void setNrOfMarkers(int nrOfMarkers) {
+        this.nrOfMarkers = nrOfMarkers;
+    }
 }
