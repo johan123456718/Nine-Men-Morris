@@ -1,5 +1,6 @@
 package com.example.nine_men_morris;
 
+import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -8,34 +9,51 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.Toast;
+
+import androidx.annotation.Nullable;
 
 import com.example.nine_men_morris.model.NineMenMorrisRules;
 import com.example.nine_men_morris.model.Player;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 
 public class GameView extends View {
 
-    NineMenMorrisRules rules;
-    Bitmap bg;
-    Rect rect;
-    ArrayList<Rect> validPlaces;
-
-    int state;
-
-    Context context;
-    Player playerRed, playerBlue;
-
-    int height, width, placeInBoard, moveTo, moveFrom;
-
-    float touchedX, touchedY;
+    private NineMenMorrisRules rules;
+    private Bitmap bg;
+    private Rect rect;
+    private ArrayList<Rect> validPlaces;
+    private Player playerRed, playerBlue;
+    private int height, width, placeInBoard;
+    private float touchedX, touchedY;
 
     public GameView(Context context) {
         super(context);
-        this.context = context;
+        init();
+    }
+
+    public GameView(Context context, @Nullable AttributeSet attrs) {
+        super(context, attrs);
+        init();
+    }
+
+    public GameView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        init();
+    }
+
+    private void init(){
         DisplayMetrics displayMetrics = new DisplayMetrics();
         ((Activity) getContext()).getWindowManager()
                 .getDefaultDisplay()
@@ -45,19 +63,16 @@ public class GameView extends View {
 
         playerRed = new Player(2); //RED
         playerBlue = new Player(1); //Blue
-        state = 0;
 
-        moveTo = 0;
-        moveFrom = 0;
-
-        validPlaces = new ArrayList<>();
-        initHitboxes();
+       // validPlaces = new ArrayList<>();
+        //initHitboxes();
 
         bg = BitmapFactory.decodeResource(getResources(), R.mipmap.nnm);
 
         rect = new Rect(0,height/4, width, (int) (height*0.75));
 
         rules = new NineMenMorrisRules();
+
     }
 
     @Override
@@ -70,7 +85,7 @@ public class GameView extends View {
         //Draw background
         canvas.drawBitmap(bg,null,rect,null);
 
-        for(int i = 0; i < playerRed.getMoves().size(); i++){
+       /* for(int i = 0; i < playerRed.getMoves().size(); i++){
             paint.setColor(Color.RED);
             canvas.drawRect(validPlaces.get(playerRed.getMoves().get(i)-1) , paint);
 
@@ -78,36 +93,36 @@ public class GameView extends View {
         for(int i = 0; i< playerBlue.getMoves().size(); i++){
             paint.setColor(Color.BLUE);
             canvas.drawRect(validPlaces.get(playerBlue.getMoves().get(i)-1) , paint);
-        }
+        }*/
 
         paint.setColor(Color.BLACK);
-        paint.setTextSize(50);
+        paint.setTextSize(45);
 
-        canvas.drawText("Red markers to place: " + (9 - playerRed.getNrOfMarkersPlaced()), 100, 150, paint);
-        canvas.drawText("Blue markers to place: " + (9 - playerBlue.getNrOfMarkersPlaced()), 100, 200, paint);
+        canvas.drawText("Red markers to place: " + (playerRed.getNrOfMarkers()), 100, 100, paint);
+        canvas.drawText("Blue markers to place: " + (playerBlue.getNrOfMarkers()), 100, 150, paint);
 
         canvas.drawText("Red markers on board: " + (playerRed.getMoves().size()), 100, 300, paint);
         canvas.drawText("Blue markers on board: " + (playerBlue.getMoves().size()), 100, 350, paint);
 
-        if(rules.getTurn() == 2) {
+        if(rules.getTurn() == playerRed.getColorID()) {
             canvas.drawText("Red's turn", 100, 400, paint);
-        }else if(rules.getTurn() == 1){
+        }else if(rules.getTurn() == playerBlue.getColorID()){
             canvas.drawText("Blue's turn", 100, 400, paint);
         }
 
-        if(state == 1) {
-            if (rules.remove(placeInBoard) && rules.getTurn() == 2) {
-                canvas.drawText("Red can remove", 100, 450, paint);
+        if(rules.getState() == 1) {
+            if (rules.remove(placeInBoard) && rules.getTurn() == playerRed.getColorID()) {
+                canvas.drawText("Red can remove", 100, 500, paint);
             }
 
-            if (rules.remove(placeInBoard) && rules.getTurn() == 1) {
-                canvas.drawText("Blue can remove", 100, 450, paint);
+            if (rules.remove(placeInBoard) && rules.getTurn() == playerBlue.getColorID()) {
+                canvas.drawText("Blue can remove", 100, 500, paint);
             }
         }
 
     }
 
-    @Override
+   /* @Override
     public boolean onTouchEvent(MotionEvent event) {
         touchedX = event.getX();
         touchedY = event.getY();
@@ -115,107 +130,121 @@ public class GameView extends View {
             case MotionEvent.ACTION_DOWN:
                 return true;
             case MotionEvent.ACTION_UP:
-            if (state != 1){
-                if ((playerRed.getNrOfMarkersPlaced() < 9) || (playerBlue.getNrOfMarkersPlaced() < 9)) {
-                    if (rules.getTurn() == 1) { //b´lås tur
-                        if (checkValid() && rules.legalMove(placeInBoard, moveTo, 1)) {
+                if (rules.getState() != 1){
+
+                    if ((playerRed.getNrOfMarkersPlaced() < 9)
+                        || (playerBlue.getNrOfMarkersPlaced() < 9)) {
+
+                    if (rules.getTurn() == playerBlue.getColorID()) {
+
+                        if (checkValid() && rules.legalMove(placeInBoard, playerBlue.getMovePieceTo(), playerBlue.getColorID())) {
                             playerBlue.getMoves().add(placeInBoard);
                             playerBlue.setNrOfMarkersPlaced(playerBlue.getNrOfMarkersPlaced() + 1);
+                            playerBlue.setNrOfMarkers(playerBlue.getNrOfMarkers() - 1);
                             invalidate();
+
                             if(rules.remove(placeInBoard)){
-                                state = 1;
-                                rules.setTurn(1);
+                                rules.setState(1);
+                                rules.setTurn(playerBlue.getColorID());
                             }
                         }
                     } else {
-                        if (checkValid() && rules.legalMove(placeInBoard, moveTo, 2)) {
+                        if (checkValid() && rules.legalMove(placeInBoard, playerRed.getMovePieceTo(), playerRed.getColorID())) {
                             playerRed.getMoves().add(placeInBoard);
                             playerRed.setNrOfMarkersPlaced(playerRed.getNrOfMarkersPlaced() + 1);
+                            playerRed.setNrOfMarkers(playerRed.getNrOfMarkers() - 1);
                             invalidate();
                             if(rules.remove(placeInBoard)){
-                                state = 1;
-                                rules.setTurn(2);
+                                rules.setState(1);
+                                rules.setTurn(playerRed.getColorID());
                             }
                         }
                     }
-
                 } else {
-                    if (rules.getTurn() == 1) {
-                        if (moveTo != 0) {
-                            if (checkValid() && rules.legalMove(placeInBoard, moveTo, 1)) {
+                    if (rules.getTurn() == playerBlue.getColorID()) {
+                        if (playerBlue.getMovePieceTo() != 0) {
+                            if (checkValid() && rules.legalMove(placeInBoard, playerBlue.getMovePieceTo(), playerBlue.getColorID())) {
                                 for (int i = 0; i < playerBlue.getMoves().size(); i++) {
+
                                     int tmp = playerBlue.getMoves().get(i);
-                                    if (moveFrom == tmp) {
+                                    if (playerBlue.getMovePieceFrom() == tmp) {
                                         playerBlue.getMoves().remove(i);
-                                        rules.remove(moveFrom, 4);
+                                        rules.remove(playerBlue.getMovePieceFrom(), 4);
                                     }
                                 }
                                 playerBlue.getMoves().add(placeInBoard);
-                                moveTo = 0;
-                                moveFrom = 0;
+                                playerBlue.setMovePieceTo(0);
+                                playerBlue.setMovePieceFrom(0);
                                 invalidate();
+
                                 if(rules.remove(placeInBoard)){
-                                    state = 1;
-                                    rules.setTurn(1);
+                                    rules.setState(1);
+                                    rules.setTurn(playerBlue.getColorID());
                                 }
-                            } else {
-                                moveTo = 0;
-                                moveFrom = 0;
+                            }
+                            else {
+                                playerBlue.setMovePieceTo(0);
+                                playerBlue.setMovePieceFrom(0);
                             }
                         } else {
+
                             if (checkValid() && (rules.board(placeInBoard) == 4)) {
-                                moveTo = placeInBoard;
-                                moveFrom = placeInBoard;
+                                playerBlue.setMovePieceTo(placeInBoard);
+                                playerBlue.setMovePieceFrom(placeInBoard);
                             }
                         }
-
-                    } else { // if (state != 0)
-                        if (moveTo != 0) {
-                            if (checkValid() && rules.legalMove(placeInBoard, moveTo, 2)) {
+                    } else {
+                        if (playerRed.getMovePieceTo() != 0) {
+                            if (checkValid() && rules.legalMove(placeInBoard, playerRed.getMovePieceTo(), playerRed.getColorID())) {
                                 for (int i = 0; i < playerRed.getMoves().size(); i++) {
+
                                     int tmp = playerRed.getMoves().get(i);
-                                    if (moveFrom == tmp) {
+                                    if (playerRed.getMovePieceFrom() == tmp) {
                                         playerRed.getMoves().remove(i);
-                                        rules.remove(moveFrom, 5);
+                                        rules.remove(playerRed.getMovePieceFrom(), 5);
                                     }
                                 }
                                 playerRed.getMoves().add(placeInBoard);
-                                moveTo = 0;
-                                moveFrom = 0;
+                                playerRed.setMovePieceTo(0);
+                                playerRed.setMovePieceFrom(0);
                                 invalidate();
+
                                 if(rules.remove(placeInBoard)){
-                                    state = 1;
-                                    rules.setTurn(2);
+                                    rules.setState(1);
+                                    rules.setTurn(playerRed.getColorID());
                                 }
                             } else {
-                                moveTo = 0;
-                                moveFrom = 0;
+
+                                playerRed.setMovePieceTo(0);
+                                playerRed.setMovePieceFrom(0);
                             }
                         } else if (checkValid() && (rules.board(placeInBoard) == 5)) {
-                                moveTo = placeInBoard;
-                                moveFrom = placeInBoard;
+
+                                playerRed.setMovePieceTo(placeInBoard);
+                                playerRed.setMovePieceFrom(placeInBoard);
                             }
                         }
                     }
                 }
 
-            else if(state == 1){
-                if(rules.remove(placeInBoard) && (rules.getTurn() == 1)){
-                   // rules.setTurn(2);
+            else if(rules.getState() == 1){
+
+                if(rules.remove(placeInBoard) && (rules.getTurn() == playerBlue.getColorID())){
                     if(checkValid() && (rules.board(placeInBoard) == 5)){
+
                         for(int i = 0; i < playerRed.getMoves().size(); i++) {
                             int tmp = playerRed.getMoves().get(i);
                             if(tmp == placeInBoard) {
-                                rules.setTurn(2);
+                                rules.setTurn(playerRed.getColorID());
                                 playerRed.getMoves().remove(i);
                                 rules.remove(placeInBoard, 5);
-                                state = 0;
+                                rules.setState(0);
                                 invalidate();
                             }
                         }
                     }
-                } else if(rules.remove(placeInBoard) && (rules.getTurn() == 2)){
-                    //rules.setTurn(1);
+                } else if(rules.remove(placeInBoard) && (rules.getTurn() == playerRed.getColorID())){
+
                     if(checkValid() && (rules.board(placeInBoard) == 4)){
 
                         for(int i = 0; i < playerBlue.getMoves().size(); i++) {
@@ -223,23 +252,31 @@ public class GameView extends View {
                             if(tmp == placeInBoard) {
                                 playerBlue.getMoves().remove(i);
                                 rules.remove(placeInBoard, 4);
-                                state = 0;
-                                rules.setTurn(1);
+                                rules.setState(0);
+                                rules.setTurn(playerBlue.getColorID());
                                 invalidate();
                             }
                         }
                     }
                 }
             }
-                if (checkWin(playerBlue) || checkWin(playerRed)){
-                    gameFinished();
-                }
+            if (checkWin(playerBlue) || checkWin(playerRed)){
+                gameFinished();
+            }
 
-                return true; // event consumed (including ACTION_DOWN)
+                AnimatorSet animationSet = new AnimatorSet();
+
+                animationSet.play(ObjectAnimator.ofFloat(image, "x", 400))
+                        .with(ObjectAnimator.ofFloat(image , "y", 400));
+                animationSet.setDuration(1000);
+                animationSet.start();
+            return true;
+
+
             default:
                 return false;
         }
-    }
+    }*/
 
     private void gameFinished(){
 

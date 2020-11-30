@@ -25,6 +25,7 @@ public class NineMenMorrisRules {
     private int[] gameplan;
     private int bluemarker, redmarker;
     private int turn; // player in turn
+    private int state;
 
     public static final int BLUE_MOVES = 1;
     public static final int RED_MOVES = 2;
@@ -38,6 +39,7 @@ public class NineMenMorrisRules {
         bluemarker = 9;
         redmarker = 9;
         turn = RED_MOVES;
+        this.state = 0;
     }
 
     /**
@@ -258,5 +260,13 @@ public class NineMenMorrisRules {
 
     public void setTurn(int turn) {
         this.turn = turn;
+    }
+
+    public int getState() {
+        return state;
+    }
+
+    public void setState(int state) {
+        this.state = state;
     }
 }

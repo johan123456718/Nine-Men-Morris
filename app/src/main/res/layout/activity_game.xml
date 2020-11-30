@@ -5,12 +5,160 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/activity_game"
+    android:clickable="true"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
     tools:context=".GameActivity">
 
     <com.example.nine_men_morris.GameView
+        android:id="@+id/drawView"
         android:layout_width="match_parent"
-        android:layout_height="325dp"
-         />
+        android:layout_height="match_parent"
+        />
+
+    <ImageView
+        android:id="@+id/blueCheck1"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_alignParentBottom="true"
+        android:src="@drawable/mjau" />
+
+    <ImageView
+        android:id="@+id/redCheck1"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="82dp"
+        android:src="@drawable/bakgrund" />
+
+    <ImageView
+        android:id="@+id/blueCheck2"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_alignParentBottom="true"
+        android:src="@drawable/mjau" />
+
+    <ImageView
+        android:id="@+id/redCheck2"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="82dp"
+        android:src="@drawable/bakgrund" />
+
+    <ImageView
+        android:id="@+id/blueCheck3"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_alignParentBottom="true"
+        android:src="@drawable/mjau" />
+
+    <ImageView
+        android:id="@+id/redCheck3"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="82dp"
+        android:src="@drawable/bakgrund" />
+
+    <ImageView
+        android:id="@+id/blueCheck4"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_alignParentBottom="true"
+        android:src="@drawable/mjau" />
+
+    <ImageView
+        android:id="@+id/redCheck4"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="82dp"
+        android:src="@drawable/bakgrund" />
+
+    <ImageView
+        android:id="@+id/blueCheck5"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_alignParentBottom="true"
+        android:src="@drawable/mjau" />
+
+    <ImageView
+        android:id="@+id/redCheck5"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="82dp"
+        android:src="@drawable/bakgrund" />
+
+    <ImageView
+        android:id="@+id/blueCheck6"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_alignParentBottom="true"
+        android:src="@drawable/mjau" />
+
+    <ImageView
+        android:id="@+id/redCheck6"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="82dp"
+        android:src="@drawable/bakgrund" />
+
+    <ImageView
+        android:id="@+id/blueCheck7"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_alignParentBottom="true"
+        android:src="@drawable/mjau" />
+
+    <ImageView
+        android:id="@+id/redCheck7"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="82dp"
+        android:src="@drawable/bakgrund" />
+
+    <ImageView
+        android:id="@+id/blueCheck8"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_alignParentBottom="true"
+        android:src="@drawable/mjau" />
+
+    <ImageView
+        android:id="@+id/redCheck8"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="82dp"
+        android:src="@drawable/bakgrund" />
+
+    <ImageView
+        android:id="@+id/blueCheck9"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_alignParentBottom="true"
+        android:src="@drawable/mjau" />
+
+    <ImageView
+        android:id="@+id/redCheck9"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="82dp"
+        android:src="@drawable/bakgrund" />
 
 
 </RelativeLayout>
