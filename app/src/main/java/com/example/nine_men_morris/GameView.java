@@ -1,5 +1,6 @@
 package com.example.nine_men_morris;
 
+import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -8,22 +9,29 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
+
+import androidx.annotation.Nullable;
 
 import com.example.nine_men_morris.model.NineMenMorrisRules;
 import com.example.nine_men_morris.model.Player;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 
 public class GameView extends View {
 
     private NineMenMorrisRules rules;
-    private Bitmap bg, test;
+    private Bitmap bg;
     private Rect rect;
     private ArrayList<Rect> validPlaces;
     private Player playerRed, playerBlue;
@@ -32,6 +40,20 @@ public class GameView extends View {
 
     public GameView(Context context) {
         super(context);
+        init();
+    }
+
+    public GameView(Context context, @Nullable AttributeSet attrs) {
+        super(context, attrs);
+        init();
+    }
+
+    public GameView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        init();
+    }
+
+    private void init(){
         DisplayMetrics displayMetrics = new DisplayMetrics();
         ((Activity) getContext()).getWindowManager()
                 .getDefaultDisplay()
@@ -42,14 +64,15 @@ public class GameView extends View {
         playerRed = new Player(2); //RED
         playerBlue = new Player(1); //Blue
 
-        validPlaces = new ArrayList<>();
-        initHitboxes();
+       // validPlaces = new ArrayList<>();
+        //initHitboxes();
 
         bg = BitmapFactory.decodeResource(getResources(), R.mipmap.nnm);
 
         rect = new Rect(0,height/4, width, (int) (height*0.75));
 
         rules = new NineMenMorrisRules();
+
     }
 
     @Override
@@ -62,7 +85,7 @@ public class GameView extends View {
         //Draw background
         canvas.drawBitmap(bg,null,rect,null);
 
-        for(int i = 0; i < playerRed.getMoves().size(); i++){
+       /* for(int i = 0; i < playerRed.getMoves().size(); i++){
             paint.setColor(Color.RED);
             canvas.drawRect(validPlaces.get(playerRed.getMoves().get(i)-1) , paint);
 
@@ -70,7 +93,7 @@ public class GameView extends View {
         for(int i = 0; i< playerBlue.getMoves().size(); i++){
             paint.setColor(Color.BLUE);
             canvas.drawRect(validPlaces.get(playerBlue.getMoves().get(i)-1) , paint);
-        }
+        }*/
 
         paint.setColor(Color.BLACK);
         paint.setTextSize(45);
@@ -99,7 +122,7 @@ public class GameView extends View {
 
     }
 
-    @Override
+   /* @Override
     public boolean onTouchEvent(MotionEvent event) {
         touchedX = event.getX();
         touchedY = event.getY();
@@ -241,12 +264,19 @@ public class GameView extends View {
                 gameFinished();
             }
 
+                AnimatorSet animationSet = new AnimatorSet();
+
+                animationSet.play(ObjectAnimator.ofFloat(image, "x", 400))
+                        .with(ObjectAnimator.ofFloat(image , "y", 400));
+                animationSet.setDuration(1000);
+                animationSet.start();
             return true;
+
 
             default:
                 return false;
         }
-    }
+    }*/
 
     private void gameFinished(){
 
