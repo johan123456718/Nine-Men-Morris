@@ -64,8 +64,8 @@ public class GameView extends View {
         playerRed = new Player(2); //RED
         playerBlue = new Player(1); //Blue
 
-       // validPlaces = new ArrayList<>();
-        //initHitboxes();
+        validPlaces = new ArrayList<>();
+        initHitboxes();
 
         bg = BitmapFactory.decodeResource(getResources(), R.mipmap.nnm);
 
@@ -94,6 +94,11 @@ public class GameView extends View {
             paint.setColor(Color.BLUE);
             canvas.drawRect(validPlaces.get(playerBlue.getMoves().get(i)-1) , paint);
         }*/
+
+        paint.setColor(Color.GREEN);
+        for (Rect rect: validPlaces){
+            canvas.drawRect(rect, paint);
+        }
 
         paint.setColor(Color.BLACK);
         paint.setTextSize(45);
