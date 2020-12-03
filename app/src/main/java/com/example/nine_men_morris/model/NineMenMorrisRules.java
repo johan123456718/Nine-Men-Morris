@@ -175,12 +175,10 @@ public class NineMenMorrisRules {
         while (count < 23) {
             if (gameplan[count] != EMPTY_SPACE && gameplan[count] != color) {
                 countMarker++;
-                Log.d("TAG", "win: GOING");
             }
             count++;
         }
         if (bluemarker <= 0 && redmarker <= 0 && countMarker < 3) {
-            Log.d("TAG", "win: hihi");
             return true;
         }
         else
