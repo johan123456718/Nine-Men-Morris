@@ -10,7 +10,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -47,7 +49,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
     private NineMenMorrisRules rules;
     private ArrayList<Rect> validPlaces;
     private Player playerRed, playerBlue;
-    private int height, width, placeInBoard, imageID;
+    private int height, width, placeInBoard, imageScale;
     private float touchedX, touchedY;
     private ArrayList<godClass> RedGods, BlueGods;
     private InternalFile internalFile;
@@ -64,8 +66,9 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         height = displayMetrics.heightPixels;
         width = displayMetrics.widthPixels;
 
-        internalFile = InternalFile.getInstance();
 
+        internalFile = InternalFile.getInstance();
+        Log.d("center", "onCreate: " + imageScale);
 
         initCheckers();
 
@@ -80,9 +83,9 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         }
 
         gameView = findViewById(R.id.drawView);
-
-
+        Log.d("cancer", "onCreate: ");
     }
+
 
     private void initCheckers(){
         blueCheckers = new ArrayList<>();
@@ -96,6 +99,8 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         redCheckers.add(redChecker1);
         RedGods.add(new godClass(redChecker1));
         BlueGods.add(new godClass(blueChecker1));
+        imageScale = redChecker1.getMeasuredHeight();
+        Log.d("center", "initCheckers: scalen: " + imageScale);
 
         blueChecker2 = findViewById(R.id.blueCheck2);
         redChecker2 = findViewById(R.id.redCheck2);
@@ -160,18 +165,12 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         super.onStart();
         dir = getFilesDir();
         internalFile.loadData(dir, playerBlue, playerRed);
-        for(int i: playerBlue.getMoves()) {
-            Log.d("TAG", "PlayerBlue.getMoves.get: " + i);
-        }
-        for(int j: playerRed.getMoves()) {
-            Log.d("TAG", "playerRed.getMoves().get: " + j);
-        }
 
-        replaceCheckers();
-
-        Log.d("TAG", "playerBlue.getNrOfMarkersPlaced(): " + playerBlue.getNrOfMarkersPlaced());
-        Log.d("TAG", "playerRed.getNrOfMarkersPlaced(): " + playerRed.getNrOfMarkersPlaced());
         gameView.setOnTouchListener(this);
+        //if om värden != null
+        replaceCheckers();
+        rules.initAfterReload(playerRed, playerBlue);
+
     }
 
     @Override
@@ -287,11 +286,9 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
                                             for (godClass e: RedGods){
                                                 if (e.getCurrentHitbox() == playerRed.getMovePieceFrom()){
                                                     e.setCurrentHitbox(placeInBoard);
-                                                    Log.d("TAG", "onTouch: efrter: " + e.getCurrentHitbox());
                                                     playerRed.setMovePieceTo(placeInBoard);
                                                 }
                                             }
-                                            Log.d("TAG", "onTouch: " + rules.board(placeInBoard));
                                             playerRed.getMoves().remove(i);
                                             rules.remove(playerRed.getMovePieceFrom(), 5);
                                         }
@@ -434,55 +431,103 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         return null;
     }
 
-    private float getCentrumHitboxXReload(Rect rect){
+    private float getCentrumReloadX(){
         if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
-            float x = width - rect.left;
-            float z = width - rect.right;
-
+            Log.d("center", "getCentrumXOfHitbox: " + placeInBoard);
+            float x = width - validPlaces.get(placeInBoard-1).left;
+            float z = width - validPlaces.get(placeInBoard-1).right;
             return (width - (z + ((x-z)/2)) - redChecker1.getWidth()/2);
         }
         else{
-            Log.d("TAG", "getCentrumXOfHitbox: " + gameView.getX());
-            float x = gameView.getX() + rect.left;
-            float z = gameView.getX() + rect.right;
-
-            return ((z + ((x-z)/2)) - redChecker1.getWidth()/2);
+            Log.d("tah", "getCentrumXOfHitbox  LANDSCAPE: " + placeInBoard);
+            float x = gameView.getX() + validPlaces.get(placeInBoard-1).left;
+            float z = gameView.getX() + validPlaces.get(placeInBoard-1).right;
+            Log.d("cancer", "getCentrumReloadX: bajsikörb " + getResources().getDimension(R.dimen.checker_size));
+            return ((z + ((x-z)/2)) - getResources().getDimension(R.dimen.checker_size)/2);
         }
     }
 
-    private float getCentrumHitboxYReload(Rect rect){
-        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-            float x = height - rect.bottom;
-            float z = height - rect.top;
+    public float getCentrumXOfHitbox(){
+        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
+            float x = width - validPlaces.get(placeInBoard-1).left;
+            float z = width - validPlaces.get(placeInBoard-1).right;
+            Log.d("cancer", "PORTRAIT: getCentrumHitbox X: " + redChecker1.getHeight());
+            return (width - (z + ((x-z)/2)) - redChecker1.getHeight()/2);
+        }
+        else{
+            float x = gameView.getX() + validPlaces.get(placeInBoard-1).left;
+            float z = gameView.getX() + validPlaces.get(placeInBoard-1).right;
+            Log.d("cancer", "LANDSCAPE: getCentrumHitbox X: HEEEEEEEEEEEEGHTI " + getResources().getDimension(R.dimen.checker_size));
+            Log.d("cancer", "getCentrumReloadX: bajsikörb " + getResources().getDimension(R.dimen.checker_size)/2);
+            return ((z + ((x-z)/2)) - getResources().getDimension(R.dimen.checker_size)/2);
+        }
+    }
 
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        Log.d("TAG", "onWindowFocusChanged: " + redChecker1.getWidth() + " " + redChecker1.getMeasuredHeight());
+        imageScale = redChecker1.getHeight();
+
+    }
+
+    private float getCentrumYOfHitbox(){
+        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            float x = height - validPlaces.get(placeInBoard - 1).bottom;
+            float z = height - validPlaces.get(placeInBoard - 1).top;
             return (height - (z + ((x - z) / 2)) - redChecker1.getHeight() / 2);
         }else{
-            float x = height - rect.bottom;
-            float z = height - rect.top;
 
+            float x = height - validPlaces.get(placeInBoard - 1).bottom;
+            float z = height - validPlaces.get(placeInBoard - 1).top;
+
+
+            Log.d("cancer", "getCentrumYOfHitbox: LANDSCAPE: CENTER Y: " +(height - (z + ((x - z) / 2)) - redChecker1.getHeight() / 2));
             return (height - (z + ((x - z) / 2)) - redChecker1.getHeight() / 2);
         }
     }
 
     private void replaceCheckers(){
-        for (int i= 0; i < playerBlue.getMoves().size(); i++){
-            //Log.d("TAG", "replaceCheckers: " + validPlaces.get(playerBlue.getMoves().get(i)));
-            Rect rect = validPlaces.get(playerBlue.getMoves().get(i));
-            Log.d("TAG", "replaceCheckers: " + getCentrumHitboxYReload(rect) + " X; " + getCentrumHitboxXReload(rect));
+        Log.d("cancer", "replaceCheckers: REEEEEEEEEEEEEEEEEEEEEEEEEELOADING ");
 
-            blueCheckers.get(i).setY(getCentrumHitboxYReload(rect));
-            blueCheckers.get(i).setX(getCentrumHitboxXReload(rect));
-            gameView.invalidate();
+        for (int i= 0; i < playerBlue.getMoves().size(); i++){
+            BlueGods.get(i).setCurrentHitbox(playerBlue.getMoves().get(i));
+            placeInBoard = BlueGods.get(i).getCurrentHitbox();
+            if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+                AnimatorSet animationSet = new AnimatorSet();
+                animationSet.play(ObjectAnimator.ofFloat(BlueGods.get(i).getCheckerId(), "x", (float) (getCentrumXOfHitbox() - getResources().getDimension(R.dimen.checker_size)/2)))
+                        .with(ObjectAnimator.ofFloat(BlueGods.get(i).getCheckerId(), "y", (float) (getCentrumYOfHitbox() - getResources().getDimension(R.dimen.checker_size)/2)));
+                animationSet.setDuration(2000);
+                animationSet.start();
+            }else{
+                AnimatorSet animationSet = new AnimatorSet();
+                animationSet.play(ObjectAnimator.ofFloat(BlueGods.get(i).getCheckerId(), "x", (getCentrumXOfHitbox() + getResources().getDimension(R.dimen.left_boarder))))
+                        .with(ObjectAnimator.ofFloat(BlueGods.get(i).getCheckerId(), "y", (getCentrumYOfHitbox() - (getResources().getDimension(R.dimen.checker_size)/2)) ));
+                animationSet.setDuration(2000);
+                animationSet.start();
+            }
 
         }
         for (int i= 0; i < playerRed.getMoves().size(); i++){
-            Rect rect = validPlaces.get(playerRed.getMoves().get(i));
-
-            redCheckers.get(i).setX(getCentrumHitboxXReload(rect));
-            redCheckers.get(i).setY(getCentrumHitboxYReload(rect));
-            gameView.invalidate();
+            RedGods.get(i).setCurrentHitbox(playerRed.getMoves().get(i));
+            Log.d("cancer", "replaceCheckers:  redGods hitbox: " + RedGods.get(i).getCurrentHitbox());
+            placeInBoard = RedGods.get(i).getCurrentHitbox();
+            Log.d("cancer", "replaceCheckers:  palceinteboard hitbox: " + placeInBoard);
+            if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+                AnimatorSet animationSet = new AnimatorSet();
+                animationSet.play(ObjectAnimator.ofFloat(RedGods.get(i).getCheckerId(), "x", (getCentrumXOfHitbox()  - getResources().getDimension(R.dimen.checker_size)/2)))
+                        .with(ObjectAnimator.ofFloat(RedGods.get(i).getCheckerId(), "y", (getCentrumYOfHitbox()  - getResources().getDimension(R.dimen.checker_size)/2)));
+                animationSet.setDuration(2000);
+                animationSet.start();
+            }else{
+                AnimatorSet animationSet = new AnimatorSet();
+                animationSet.play(ObjectAnimator.ofFloat(RedGods.get(i).getCheckerId(), "x", getCentrumXOfHitbox() + getResources().getDimension(R.dimen.left_boarder)))
+                        .with(ObjectAnimator.ofFloat(RedGods.get(i).getCheckerId(), "y", getCentrumYOfHitbox()- getResources().getDimension(R.dimen.checker_size)/2));
+                animationSet.setDuration(2000);
+                animationSet.start();
+            }
         }
-
+        gameView.invalidate();
     }
 
 
@@ -505,35 +550,6 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
 
     }
 
-    private float getCentrumXOfHitbox(){
-        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
-            float x = width - validPlaces.get(placeInBoard-1).left;
-            float z = width - validPlaces.get(placeInBoard-1).right;
-
-            return (width - (z + ((x-z)/2)) - redChecker1.getWidth()/2);
-        }
-        else{
-            Log.d("TAG", "getCentrumXOfHitbox: " + gameView.getX());
-            float x = gameView.getX() + validPlaces.get(placeInBoard-1).left;
-            float z = gameView.getX() + validPlaces.get(placeInBoard-1).right;
-
-            return ((z + ((x-z)/2)) - redChecker1.getWidth()/2);
-        }
-    }
-
-    private float getCentrumYOfHitbox(){
-        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-            float x = height - validPlaces.get(placeInBoard - 1).bottom;
-            float z = height - validPlaces.get(placeInBoard - 1).top;
-
-            return (height - (z + ((x - z) / 2)) - redChecker1.getHeight() / 2);
-        }else{
-            float x = height - validPlaces.get(placeInBoard - 1).bottom;
-            float z = height - validPlaces.get(placeInBoard - 1).top;
-
-            return (height - (z + ((x - z) / 2)) - redChecker1.getHeight() / 2);
-        }
-    }
 
     private boolean checkWin(Player color){
         if(((color.getMoves().size() < 3) && (color.getNrOfMarkersPlaced() == 9))){
@@ -560,7 +576,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
     }
 
     private void initHitboxesPortrait(){
-        Log.d("TAG", "initHitboxesPortrait: ");
+
         //1
         Rect validplace = new Rect();
         validplace.left =  ((width/6)*3)/2 + 100 ;
@@ -584,7 +600,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.right = validplace.left + 100;
         validplace.bottom = validplace.top + 100;
         validPlaces.add(validplace);
-
+        Log.d("center", "initHitboxesPortrait: X: " + validplace.centerX() + " Y: " + validplace.centerY());
         //4
         validplace = new Rect();
         validplace.left = width/2 -50;
@@ -755,7 +771,6 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
 
     }
     private void initHitboxesLandscape(){
-        Log.d("TAG", "initHitboxesLandscape: " + validPlaces.size());
 
         //1
         Rect validplace = new Rect();
@@ -764,6 +779,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.top =(height/3) +50;
         validplace.bottom = validplace.top - 100;
         validPlaces.add(validplace);
+
 
         //2
         validplace = new Rect();
@@ -780,6 +796,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.top = 25;
         validplace.bottom = validplace.top + 100;
         validPlaces.add(validplace);
+        Log.d("cancer", "initHitboxesLANDSCAPE: X: " + validplace.centerX() + " Y: " + validplace.centerY());
 
         //4
         validplace = new Rect();

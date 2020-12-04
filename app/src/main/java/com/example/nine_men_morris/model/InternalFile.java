@@ -8,6 +8,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.security.spec.ECField;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,4 +63,17 @@ public class InternalFile {
             e.printStackTrace();
         }
     }
+
+    public void clearData(){
+        try{
+            FileOutputStream writer = new FileOutputStream(NAME_OF_FILE);
+            writer.write(("").getBytes());
+            writer.flush(); // flush the stream
+        }catch (Exception e ){
+            e.printStackTrace();
+        }
+
+    }
+
+
 }

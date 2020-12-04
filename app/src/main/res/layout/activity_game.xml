@@ -177,5 +177,4 @@
         android:layout_alignParentEnd="true"
         android:src="@mipmap/red" />
 
-
 </RelativeLayout>

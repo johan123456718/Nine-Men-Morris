@@ -1,6 +1,8 @@
 package com.example.nine_men_morris.model;
 
 
+import android.content.res.Configuration;
+import android.net.PlatformVpnProfile;
 import android.util.Log;
 
 /**
@@ -267,4 +269,21 @@ public class NineMenMorrisRules {
     public void setState(int state) {
         this.state = state;
     }
+
+    /**
+     * Initiates the board after a reload from file
+     */
+    public void initAfterReload(Player red, Player blue){
+        for (int move: red.getMoves()){
+            gameplan[move] = 5;
+            redmarker--;
+        }
+        for (int move: blue.getMoves()){
+            gameplan[move] = 4;
+            bluemarker--;
+        }
+
+    }
+
+
 }
