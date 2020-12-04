@@ -1,5 +1,6 @@
 package com.example.nine_men_morris;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -18,10 +19,12 @@ import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.Toast;
 
+import com.example.nine_men_morris.model.InternalFile;
 import com.example.nine_men_morris.model.NineMenMorrisRules;
 import com.example.nine_men_morris.model.Player;
 import com.example.nine_men_morris.model.godClass;
 
+import java.io.File;
 import java.util.ArrayList;
 
 /**
@@ -47,8 +50,8 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
     private int height, width, placeInBoard, imageID;
     private float touchedX, touchedY;
     private ArrayList<godClass> RedGods, BlueGods;
-
-
+    private InternalFile internalFile;
+    private File dir;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,6 +63,8 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
                 .getMetrics(displayMetrics);
         height = displayMetrics.heightPixels;
         width = displayMetrics.widthPixels;
+
+        internalFile = InternalFile.getInstance();
 
 
         initCheckers();
@@ -153,6 +158,19 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
     @Override
     protected void onStart(){
         super.onStart();
+        dir = getFilesDir();
+        internalFile.loadData(dir, playerBlue, playerRed);
+        for(int i: playerBlue.getMoves()) {
+            Log.d("TAG", "PlayerBlue.getMoves.get: " + i);
+        }
+        for(int j: playerRed.getMoves()) {
+            Log.d("TAG", "playerRed.getMoves().get: " + j);
+        }
+
+        replaceCheckers();
+
+        Log.d("TAG", "playerBlue.getNrOfMarkersPlaced(): " + playerBlue.getNrOfMarkersPlaced());
+        Log.d("TAG", "playerRed.getNrOfMarkersPlaced(): " + playerRed.getNrOfMarkersPlaced());
         gameView.setOnTouchListener(this);
     }
 
@@ -416,9 +434,75 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         return null;
     }
 
+    private float getCentrumHitboxXReload(Rect rect){
+        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
+            float x = width - rect.left;
+            float z = width - rect.right;
+
+            return (width - (z + ((x-z)/2)) - redChecker1.getWidth()/2);
+        }
+        else{
+            Log.d("TAG", "getCentrumXOfHitbox: " + gameView.getX());
+            float x = gameView.getX() + rect.left;
+            float z = gameView.getX() + rect.right;
+
+            return ((z + ((x-z)/2)) - redChecker1.getWidth()/2);
+        }
+    }
+
+    private float getCentrumHitboxYReload(Rect rect){
+        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            float x = height - rect.bottom;
+            float z = height - rect.top;
+
+            return (height - (z + ((x - z) / 2)) - redChecker1.getHeight() / 2);
+        }else{
+            float x = height - rect.bottom;
+            float z = height - rect.top;
+
+            return (height - (z + ((x - z) / 2)) - redChecker1.getHeight() / 2);
+        }
+    }
+
+    private void replaceCheckers(){
+        for (int i= 0; i < playerBlue.getMoves().size(); i++){
+            //Log.d("TAG", "replaceCheckers: " + validPlaces.get(playerBlue.getMoves().get(i)));
+            Rect rect = validPlaces.get(playerBlue.getMoves().get(i));
+            Log.d("TAG", "replaceCheckers: " + getCentrumHitboxYReload(rect) + " X; " + getCentrumHitboxXReload(rect));
+
+            blueCheckers.get(i).setY(getCentrumHitboxYReload(rect));
+            blueCheckers.get(i).setX(getCentrumHitboxXReload(rect));
+            gameView.invalidate();
+
+        }
+        for (int i= 0; i < playerRed.getMoves().size(); i++){
+            Rect rect = validPlaces.get(playerRed.getMoves().get(i));
+
+            redCheckers.get(i).setX(getCentrumHitboxXReload(rect));
+            redCheckers.get(i).setY(getCentrumHitboxYReload(rect));
+            gameView.invalidate();
+        }
+
+    }
+
+
     @Override
     protected void onStop() {
         super.onStop();
+
+        new Thread(new Runnable(){
+            @Override
+            public void run() {
+                dir = getFilesDir();
+                internalFile.saveData(dir,
+                        playerBlue.getMoves(),
+                        playerRed.getMoves(),
+                        playerBlue.getNrOfMarkersPlaced(),
+                        playerRed.getNrOfMarkersPlaced());
+                Log.d("TAG", "run: SAVED");
+            }
+        }).start();
+
     }
 
     private float getCentrumXOfHitbox(){
@@ -476,10 +560,10 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
     }
 
     private void initHitboxesPortrait(){
-        //Log.d("TAG", "initHitboxesPortrait: ");
+        Log.d("TAG", "initHitboxesPortrait: ");
         //1
         Rect validplace = new Rect();
-        validplace.left =  ((width/6)*3)/2 + 100;
+        validplace.left =  ((width/6)*3)/2 + 100 ;
         validplace.right = validplace.left + 100;
         validplace.top =((((height/4) - (((height/4) - (height/4 + height/4 +50))/3) ) + height/2) /2)+50;
         validplace.bottom = validplace.top - 100;
@@ -672,14 +756,14 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
     }
     private void initHitboxesLandscape(){
         Log.d("TAG", "initHitboxesLandscape: " + validPlaces.size());
+
         //1
         Rect validplace = new Rect();
-        validplace.left =  25 ;
+        validplace.left = width/4 -75;
         validplace.right = validplace.left + 100;
-        validplace.top = 25;
-        validplace.bottom = validplace.top + 100;
+        validplace.top =(height/3) +50;
+        validplace.bottom = validplace.top - 100;
         validPlaces.add(validplace);
-        Log.d("TAG", "initHitboxesLandscape: " +validPlaces.get(0));
 
         //2
         validplace = new Rect();
@@ -688,190 +772,183 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.top =((height/8) - (((height/8) - (height/8 + height/8 -50))/3))+75;
         validplace.bottom = validplace.top - 100;
         validPlaces.add(validplace);
-        /*
-        //2
-        validplace = new Rect();
-        validplace.right = width/6;
-        validplace.left = validplace.right + 100;
-        validplace.top =((height/4) - (((height/4) - (height/4 + height/4 +50))/3))+75;
-        validplace.bottom = validplace.top - 100;
-        validPlaces.add(validplace);
 
-        //nr 3
+        //3
         validplace = new Rect();
-        validplace.left = 25;
-        validplace.top = height/4;
+        validplace.left =  25 ;
         validplace.right = validplace.left + 100;
+        validplace.top = 25;
         validplace.bottom = validplace.top + 100;
         validPlaces.add(validplace);
 
         //4
         validplace = new Rect();
-        validplace.left = width/2 -50;
+        validplace.left = width/3 ;
         validplace.right = validplace.left + 100;
-        validplace.top =((((height/4) - (((height/4) - (height/4 + height/4 +50))/3) ) + height/2) /2)+50;
+        validplace.top =(height/3) +50;
         validplace.bottom = validplace.top - 100;
         validPlaces.add(validplace);
 
         //5
         validplace = new Rect();
-        validplace.left = width/2 -50;
+        validplace.left = width/3 ;
         validplace.right = validplace.left + 100;
-        validplace.top =((height/4) - (((height/4) - (height/4 + height/4 +50))/3))+75;
+        validplace.top =((height/8) - (((height/8) - (height/8 + height/8 -50))/3))+75;
         validplace.bottom = validplace.top - 100;
         validPlaces.add(validplace);
 
-        //nr 6
+        //6
         validplace = new Rect();
-        validplace.left = width/2 -50;
-        validplace.top = height/4;
+        validplace.left = width/3 ;
         validplace.right = validplace.left + 100;
+        validplace.top = 25;
         validplace.bottom = validplace.top + 100;
         validPlaces.add(validplace);
 
         //7
         validplace = new Rect();
-        validplace.left =  width - (((width/6)*3)/2 + 200) ;
+        validplace.left = (int)(width*0.44);
         validplace.right = validplace.left + 100;
-        validplace.top =((((height/4) - (((height/4) - (height/4 + height/4 +50))/3) ) + height/2) /2)+50;
+        validplace.top =(height/3) +50;
         validplace.bottom = validplace.top - 100;
         validPlaces.add(validplace);
 
         //8
         validplace = new Rect();
-        validplace.right = ((width) - (width/6));
-        validplace.left = validplace.right -100;
-        validplace.top =((height/4) - (((height/4) - (height/4 + height/4 +50))/3))+75;
+        validplace.left = (int) (width*0.54);
+        validplace.right = validplace.left + 100;
+        validplace.top =((height/8) - (((height/8) - (height/8 + height/8 -50))/3))+75;
         validplace.bottom = validplace.top - 100;
         validPlaces.add(validplace);
 
-        //nr 9
+        //9
         validplace = new Rect();
-        validplace.right = width - 25;
-        validplace.left = validplace.right -100;
-        validplace.top = height/4;
+        validplace.left = (int) (width*0.65);
+        validplace.right = validplace.left + 100;
+        validplace.top = 25;
         validplace.bottom = validplace.top + 100;
         validPlaces.add(validplace);
 
-        // 10
+        //10
         validplace = new Rect();
-        validplace.left =  width - (((width/6)*3)/2 + 200) ;
+        validplace.left = (int)(width*0.44);
         validplace.right = validplace.left + 100;
-        validplace.top = height/4 + height/4 +50;
-        validplace.bottom = validplace.top - 100;
+        validplace.top = (int) (height*0.4) + 50;
+        validplace.bottom = validplace.top + 100;
         validPlaces.add(validplace);
 
         //11
         validplace = new Rect();
-        validplace.right = ((width) - (width/6));
-        validplace.left = validplace.right -100;
-        validplace.top = height/4 + height/4 +50;
-        validplace.bottom = validplace.top - 100;
+        validplace.left = (int) (width*0.54);
+        validplace.right = validplace.left + 100;
+        validplace.top = (int) (height*0.4) + 50;
+        validplace.bottom = validplace.top + 100;
         validPlaces.add(validplace);
 
-        //nr 12
+        //12
         validplace = new Rect();
-        validplace.right = width - 25;
-        validplace.left = validplace.right -100;
-        validplace.top = height/4 + height/4 +50;
-        validplace.bottom = validplace.top - 100;
+        validplace.left = (int) (width*0.65);
+        validplace.right = validplace.left + 100;
+        validplace.top = (int) (height*0.4) + 50;
+        validplace.bottom = validplace.top + 100;
         validPlaces.add(validplace);
 
         //13
         validplace = new Rect();
-        validplace.left =  width - (((width/6)*3)/2 + 200) ;
+        validplace.left = (int)(width*0.44);
         validplace.right = validplace.left + 100;
-        validplace.top =(( ((height - height/4) - (((height - height/4) - (height/4 + height/4 +50))/3) ) + height/2) /2)+25;
-        validplace.bottom = validplace.top - 100;
+        validplace.top = (int) (height*0.57);
+        validplace.bottom = validplace.top + 100;
         validPlaces.add(validplace);
 
         //14
         validplace = new Rect();
-        validplace.right = ((width) - (width/6));
-        validplace.left = validplace.right -100;
-        validplace.top =((height - height/4) - (((height - height/4) - (height/4 + height/4 +50))/3));
-        validplace.bottom = validplace.top - 100;
+        validplace.left = (int) (width*0.54);
+        validplace.right = validplace.left + 100;
+        validplace.top = (int) (height*0.71);
+        validplace.bottom = validplace.top + 100;
         validPlaces.add(validplace);
 
         //15
         validplace = new Rect();
-        validplace.right = width - 25;
-        validplace.left = validplace.right -100;
-        validplace.top = height - height/4;
-        validplace.bottom = validplace.top - 100;
+        validplace.left = (int) (width*0.65);
+        validplace.right = validplace.left + 100;
+        validplace.top = (int) (height*0.85);
+        validplace.bottom = validplace.top + 100;
         validPlaces.add(validplace);
 
         //16
         validplace = new Rect();
-        validplace.left = width/2 -50;
+        validplace.left = width/3 ;
         validplace.right = validplace.left + 100;
-        validplace.top =(( ((height - height/4) - (((height - height/4) - (height/4 + height/4 +50))/3) ) + height/2) /2)+25;
-        validplace.bottom = validplace.top - 100;
+        validplace.top = (int) (height*0.57);
+        validplace.bottom = validplace.top + 100;
         validPlaces.add(validplace);
 
         //17
         validplace = new Rect();
-        validplace.left = width/2 -50;
+        validplace.left = width/3 ;
         validplace.right = validplace.left + 100;
-        validplace.top =((height - height/4) - (((height - height/4) - (height/4 + height/4 +50))/3));
-        validplace.bottom = validplace.top - 100;
+        validplace.top = (int) (height*0.71);
+        validplace.bottom = validplace.top + 100;
         validPlaces.add(validplace);
 
         //18
         validplace = new Rect();
-        validplace.left = width/2 -50;
+        validplace.left = width/3 ;
         validplace.right = validplace.left + 100;
-        validplace.top = height - height/4;
-        validplace.bottom = validplace.top - 100;
+        validplace.top = (int) (height*0.85);
+        validplace.bottom = validplace.top + 100;
         validPlaces.add(validplace);
 
         //19
         validplace = new Rect();
-        validplace.left =  ((width/6)*3)/2 + 100 ;
+        validplace.left = width/4 -75;
         validplace.right = validplace.left + 100;
-        validplace.top =((((height - height/4) - (((height - height/4) - (height/4 + height/4 +50))/3) ) + height/2) /2)+25;
-        validplace.bottom = validplace.top - 100;
+        validplace.top = (int) (height*0.57);
+        validplace.bottom = validplace.top + 100;
         validPlaces.add(validplace);
 
         //20
         validplace = new Rect();
-        validplace.right = width/6;
-        validplace.left = validplace.right + 100;
-        validplace.top =((height - height/4) - (((height - height/4) - (height/4 + height/4 +50))/3));
-        validplace.bottom = validplace.top - 100;
+        validplace.left = width/8 -25;
+        validplace.right = validplace.left + 100;
+        validplace.top = (int) (height*0.71);
+        validplace.bottom = validplace.top + 100;
         validPlaces.add(validplace);
 
         //21
         validplace = new Rect();
-        validplace.left = 25;
+        validplace.left =  25 ;
         validplace.right = validplace.left + 100;
-        validplace.top = height - height/4;
-        validplace.bottom = validplace.top - 100;
+        validplace.top = (int) (height*0.85);
+        validplace.bottom = validplace.top + 100;
         validPlaces.add(validplace);
 
         //22
         validplace = new Rect();
-        validplace.left =  ((width/6)*3)/2 + 100 ;
+        validplace.left = width/4 -75;
         validplace.right = validplace.left + 100;
-        validplace.top = height/4 + height/4 +50;
-        validplace.bottom = validplace.top - 100;
+        validplace.top = (int) (height*0.4) + 50;
+        validplace.bottom = validplace.top + 100;
         validPlaces.add(validplace);
 
         //23
         validplace = new Rect();
-        validplace.right = width/6;
-        validplace.left = validplace.right + 100;
-        validplace.top = height/4 + height/4 +50;
-        validplace.bottom = validplace.top - 100;
+        validplace.left = width/8 -25;
+        validplace.right = validplace.left + 100;
+        validplace.top = (int) (height*0.4) + 50;
+        validplace.bottom = validplace.top + 100;
         validPlaces.add(validplace);
 
-        //24
+        //nr 24
         validplace = new Rect();
         validplace.left = 25;
         validplace.right = validplace.left + 100;
-        validplace.top = height/4 + height/4 +50;
-        validplace.bottom = validplace.top - 100;
+        validplace.top = (int) (height*0.4) + 50;
+        validplace.bottom = validplace.top + 100;
         validPlaces.add(validplace);
-*/
+
     }
+
 }
