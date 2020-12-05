@@ -1,9 +1,10 @@
 package com.example.nine_men_morris.model;
 
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Player {
+public class Player implements Serializable {
 
     private int colorID;
     private ArrayList<Integer> moves;
@@ -11,6 +12,7 @@ public class Player {
     private int movePieceTo;
     private int movePieceFrom;
     private int nrOfMarkers;
+    private int nrOfRemovedCheckers;
 
     public Player(int colorID){
         this.colorID = colorID;
@@ -19,6 +21,7 @@ public class Player {
         this.movePieceTo = 0;
         this.movePieceFrom = 0;
         this.nrOfMarkers = 9;
+        this.nrOfRemovedCheckers = 0;
     }
 
     public int getNrOfMarkersPlaced() {
@@ -31,6 +34,11 @@ public class Player {
 
     public ArrayList<Integer> getMoves() {
         return moves;
+    }
+
+    public void setMoves(ArrayList<Integer> moves) {
+        this.moves.clear();
+        this.moves.addAll(moves);
     }
 
     public int getColorID() {
@@ -59,5 +67,13 @@ public class Player {
 
     public void setNrOfMarkers(int nrOfMarkers) {
         this.nrOfMarkers = nrOfMarkers;
+    }
+
+    public int getNrOfRemovedCheckers() {
+        return nrOfRemovedCheckers;
+    }
+
+    public void setNrOfRemovedCheckers(int nrOfRemovedCheckers) {
+        this.nrOfRemovedCheckers = nrOfRemovedCheckers;
     }
 }

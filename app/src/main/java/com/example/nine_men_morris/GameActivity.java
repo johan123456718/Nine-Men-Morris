@@ -1,9 +1,13 @@
 package com.example.nine_men_morris;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
+import android.content.DialogInterface;
+import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -11,12 +15,13 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.Switch;
-import android.widget.Toast;
 
+import com.example.nine_men_morris.model.InternalFile;
 import com.example.nine_men_morris.model.NineMenMorrisRules;
 import com.example.nine_men_morris.model.Player;
+import com.example.nine_men_morris.model.checkerViewModel;
 
+import java.io.File;
 import java.util.ArrayList;
 
 /**
@@ -34,12 +39,16 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
                         blueChecker7, redChecker7,
                         blueChecker8, redChecker8,
                         blueChecker9, redChecker9;
+
     private ArrayList<ImageView> redCheckers, blueCheckers;
     private NineMenMorrisRules rules;
     private ArrayList<Rect> validPlaces;
     private Player playerRed, playerBlue;
-    private int height, width, placeInBoard, imageID;
+    private int height, width, placeInBoard, imageScale, nrOfRemovedRedCheckers, nrOfRemovedBlueCheckers;
     private float touchedX, touchedY;
+    private ArrayList<checkerViewModel> redCheckersViewModel, blueCheckersViewModel;
+    private InternalFile internalFile;
+    private File dir;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,7 +62,9 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         height = displayMetrics.heightPixels;
         width = displayMetrics.widthPixels;
 
-        gameView = findViewById(R.id.drawView);
+
+        internalFile = InternalFile.getInstance();
+        Log.d("center", "onCreate: " + imageScale);
 
         initCheckers();
 
@@ -61,151 +72,152 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validPlaces = new ArrayList<>();
         playerRed = new Player(2); //RED
         playerBlue = new Player(1); //Blue
-        initHitboxes();
+        nrOfRemovedRedCheckers = 0;
+        nrOfRemovedBlueCheckers = 0;
+
+        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
+            initHitboxesPortrait();
+        }else {
+            initHitboxesLandscape();
+        }
+
+        gameView = findViewById(R.id.drawView);
+        Log.d("cancer", "onCreate: ");
     }
 
+    /**
+     * Helper method to initiate all the ImageViews for the checkers.
+     */
     private void initCheckers(){
         blueCheckers = new ArrayList<>();
         redCheckers = new ArrayList<>();
+        redCheckersViewModel = new ArrayList<>();
+        blueCheckersViewModel = new ArrayList<>();
 
         blueChecker1 = (ImageView) findViewById(R.id.blueCheck1);
         redChecker1 = (ImageView) findViewById(R.id.redCheck1);
         blueCheckers.add(blueChecker1);
         redCheckers.add(redChecker1);
+        redCheckersViewModel.add(new checkerViewModel(redChecker1));
+        blueCheckersViewModel.add(new checkerViewModel(blueChecker1));
+        imageScale = redChecker1.getMeasuredHeight();
+        Log.d("center", "initCheckers: scalen: " + imageScale);
 
         blueChecker2 = findViewById(R.id.blueCheck2);
         redChecker2 = findViewById(R.id.redCheck2);
         blueCheckers.add(blueChecker2);
         redCheckers.add(redChecker2);
+        redCheckersViewModel.add(new checkerViewModel(redChecker2));
+        blueCheckersViewModel.add(new checkerViewModel(blueChecker2));
 
         blueChecker3 = findViewById(R.id.blueCheck3);
         redChecker3 = findViewById(R.id.redCheck3);
         blueCheckers.add(blueChecker3);
         redCheckers.add(redChecker3);
+        redCheckersViewModel.add(new checkerViewModel(redChecker3));
+        blueCheckersViewModel.add(new checkerViewModel(blueChecker3));
 
         blueChecker4 = findViewById(R.id.blueCheck4);
         redChecker4 = findViewById(R.id.redCheck4);
         blueCheckers.add(blueChecker4);
         redCheckers.add(redChecker4);
+        redCheckersViewModel.add(new checkerViewModel(redChecker4));
+        blueCheckersViewModel.add(new checkerViewModel(blueChecker4));
 
         blueChecker5 = findViewById(R.id.blueCheck5);
         redChecker5 = findViewById(R.id.redCheck5);
         blueCheckers.add(blueChecker5);
         redCheckers.add(redChecker5);
+        redCheckersViewModel.add(new checkerViewModel(redChecker5));
+        blueCheckersViewModel.add(new checkerViewModel(blueChecker5));
 
         blueChecker6 = findViewById(R.id.blueCheck6);
         redChecker6 = findViewById(R.id.redCheck6);
         blueCheckers.add(blueChecker6);
         redCheckers.add(redChecker6);
+        redCheckersViewModel.add(new checkerViewModel(redChecker6));
+        blueCheckersViewModel.add(new checkerViewModel(blueChecker6));
 
         blueChecker7 = findViewById(R.id.blueCheck7);
         redChecker7 = findViewById(R.id.redCheck7);
         blueCheckers.add(blueChecker7);
         redCheckers.add(redChecker7);
+        redCheckersViewModel.add(new checkerViewModel(redChecker7));
+        blueCheckersViewModel.add(new checkerViewModel(blueChecker7));
 
         blueChecker8 = findViewById(R.id.blueCheck8);
         redChecker8 = findViewById(R.id.redCheck8);
         blueCheckers.add(blueChecker8);
         redCheckers.add(redChecker8);
+        redCheckersViewModel.add(new checkerViewModel(redChecker8));
+        blueCheckersViewModel.add(new checkerViewModel(blueChecker8));
 
         blueChecker9 = findViewById(R.id.blueCheck9);
         redChecker9 = findViewById(R.id.redCheck9);
         blueCheckers.add(blueChecker9);
         redCheckers.add(redChecker9);
-
-
+        redCheckersViewModel.add(new checkerViewModel(redChecker9));
+        blueCheckersViewModel.add(new checkerViewModel(blueChecker9));
 
     }
 
     @Override
     protected void onStart(){
         super.onStart();
+        dir = getFilesDir();
+        internalFile.loadData(dir, playerBlue, playerRed, rules);
+
         gameView.setOnTouchListener(this);
+
+        //if om värden != null
+        rules.initAfterReload(playerRed, playerBlue);
+        setCheckerStates();
+        replaceCheckers();
+        Log.d("sex", "onStart: ");
+    }
+
+    /**
+     * Helper method to make removed checkers not show up on screen.
+     */
+    private void setCheckerStates() {
+        if(playerRed.getNrOfRemovedCheckers() > 0){
+           for (int i = 1; i < playerRed.getNrOfRemovedCheckers() +1  ; i++ ){
+               redCheckersViewModel.get(playerRed.getNrOfMarkersPlaced()-i).getCheckerId().setVisibility(View.INVISIBLE);
+           }
+        }
+        if (playerBlue.getNrOfRemovedCheckers() > 0){
+            for (int i = 1; i < playerBlue.getNrOfRemovedCheckers() + 1 ; i++ ){
+                blueCheckersViewModel.get(playerBlue.getNrOfMarkersPlaced()-i).getCheckerId().setVisibility(View.INVISIBLE);
+            }
+        }
     }
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
         touchedX = event.getX();
         touchedY = event.getY();
-        Log.d("TAG", "onTouch: "+ v.getId());
-        switch (v.getId()){
-            case R.id.redCheck1:
-                Log.d("TAG", "onClick: REDCHECK11111111");
-                imageID = 0;
-                break;
-            case R.id.blueCheck1:
-                Log.d("TAG", "onClick: REDCHECK11111111");
-                imageID = 0;
-                break;
-            case R.id.redCheck2:
-                Log.d("TAG", "onClick: REDCHECK11111111");
-                imageID = 1;
-                break;
-            case R.id.blueCheck2:
-                imageID = 1;
-                break;
-            case R.id.redCheck3:
-                imageID = 2;
-                break;
-            case R.id.blueCheck3:
-                imageID = 2;
-                break;
-            case R.id.redCheck4:
-                imageID = 3;
-                break;
-            case R.id.blueCheck4:
-                imageID = 3;
-                break;
-            case R.id.redCheck5:
-                imageID = 4;
-                break;
-            case R.id.blueCheck5:
-                imageID = 4;
-                break;
-            case R.id.redCheck6:
-                imageID = 5;
-                break;
-            case R.id.blueCheck6:
-                imageID = 5;
-                break;
-            case R.id.redCheck7:
-                imageID = 6;
-                break;
-            case R.id.blueCheck7:
-                imageID = 6;
-                break;
-            case R.id.redCheck8:
-                imageID = 7;
-                break;
-            case R.id.blueCheck8:
-                imageID = 7;
-                break;
-            case R.id.redCheck9:
-                imageID = 8;
-                break;
-            case R.id.blueCheck9:
-                imageID = 8;
-                break;
-        }
 
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 return true;
             case MotionEvent.ACTION_UP:
-                if (rules.getState() != 1){
+
+                if (rules.getState() != 1){ // Blå för placer en checker innan 9
                     if ((playerRed.getNrOfMarkersPlaced() < 9)
                             || (playerBlue.getNrOfMarkersPlaced() < 9)) {
                         if (rules.getTurn() == playerBlue.getColorID()) {
                             if (checkValid() && rules.legalMove(placeInBoard, playerBlue.getMovePieceTo(), playerBlue.getColorID())) {
                                 playerBlue.getMoves().add(placeInBoard);
+                                blueCheckersViewModel.get(playerBlue.getNrOfMarkersPlaced()).setCurrentHitbox(placeInBoard);
                                 playerBlue.setNrOfMarkersPlaced(playerBlue.getNrOfMarkersPlaced() + 1);
                                 playerBlue.setNrOfMarkers(playerBlue.getNrOfMarkers() - 1);
 
                                 AnimatorSet animationSet = new AnimatorSet();
                                 animationSet.play(ObjectAnimator.ofFloat(getCurrentChecker(), "X", getCentrumXOfHitbox()))
-                                        .after(ObjectAnimator.ofFloat(getCurrentChecker(), "Y", getCentrumYOfHitbox()));
+                                        .with(ObjectAnimator.ofFloat(getCurrentChecker(), "Y", getCentrumYOfHitbox()));
                                 animationSet.setDuration(1000);
                                 animationSet.start();
+
                                 v.invalidate();
 
                                 if(rules.remove(placeInBoard)){
@@ -213,16 +225,19 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
                                     rules.setTurn(playerBlue.getColorID());
                                 }
                             }
-                        } else {
+                        } else { // röd för palcera en checker innan 9
                             if (checkValid() && rules.legalMove(placeInBoard, playerRed.getMovePieceTo(), playerRed.getColorID())) {
                                 playerRed.getMoves().add(placeInBoard);
+                                redCheckersViewModel.get(playerRed.getNrOfMarkersPlaced()).setCurrentHitbox(placeInBoard);
                                 playerRed.setNrOfMarkersPlaced(playerRed.getNrOfMarkersPlaced() + 1);
                                 playerRed.setNrOfMarkers(playerRed.getNrOfMarkers() - 1);
+
                                 AnimatorSet animationSet = new AnimatorSet();
                                 animationSet.play(ObjectAnimator.ofFloat(getCurrentChecker(), "x", getCentrumXOfHitbox()))
-                                        .after(ObjectAnimator.ofFloat(getCurrentChecker(), "y", getCentrumYOfHitbox()));
+                                        .with(ObjectAnimator.ofFloat(getCurrentChecker(), "y", getCentrumYOfHitbox()));
                                 animationSet.setDuration(1000);
                                 animationSet.start();
+
                                 v.invalidate();
                                 if(rules.remove(placeInBoard)){
                                     rules.setState(1);
@@ -230,7 +245,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
                                 }
                             }
                         }
-                    } else {
+                    } else { // blå får flytta en av sina checkers
                         if (rules.getTurn() == playerBlue.getColorID()) {
                             if (playerBlue.getMovePieceTo() != 0) {
                                 if (checkValid() && rules.legalMove(placeInBoard, playerBlue.getMovePieceTo(), playerBlue.getColorID())) {
@@ -240,20 +255,27 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
 
                                         int tmp = playerBlue.getMoves().get(i);
                                         if (playerBlue.getMovePieceFrom() == tmp) {
+                                            for (checkerViewModel e: blueCheckersViewModel){
+                                                if (e.getCurrentHitbox() == playerBlue.getMovePieceFrom()){
+                                                    e.setCurrentHitbox(placeInBoard);
+                                                    playerBlue.setMovePieceTo(placeInBoard);
+                                                }
+                                            }
                                             playerBlue.getMoves().remove(i);
                                             rules.remove(playerBlue.getMovePieceFrom(), 4);
-
                                         }
                                     }
                                     playerBlue.getMoves().add(placeInBoard);
-                                    playerBlue.setMovePieceTo(0); //moveto = 0
-                                    playerBlue.setMovePieceFrom(0); //movefrom = 0
-                                    Log.d("TAG", "onTouch: " + imageID);
+
                                     AnimatorSet animationSet = new AnimatorSet();
                                     animationSet.play(ObjectAnimator.ofFloat(getSelectedChecker(), "x", getCentrumXOfHitbox()))
-                                            .after(ObjectAnimator.ofFloat(getSelectedChecker(), "y", getCentrumYOfHitbox()));
+                                            .with(ObjectAnimator.ofFloat(getSelectedChecker(), "y", getCentrumYOfHitbox()));
                                     animationSet.setDuration(1000);
                                     animationSet.start();
+
+                                    playerBlue.setMovePieceTo(0); //moveto = 0
+                                    playerBlue.setMovePieceFrom(0); //movefrom = 0
+
                                     v.invalidate();
 
                                     if(rules.remove(placeInBoard)){
@@ -272,29 +294,36 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
                                     playerBlue.setMovePieceFrom(placeInBoard);
                                 }
                             }
-                        } else {
+                        } else { //Röd får flytta en chercker
                             if (playerRed.getMovePieceTo() != 0) {
                                 if (checkValid() && rules.legalMove(placeInBoard, playerRed.getMovePieceTo(), playerRed.getColorID())) {
                                    //imageID = v.getId();
                                     //Toast.makeText(this, "Image clicked: " + imageID, Toast.LENGTH_LONG).show();
                                     for (int i = 0; i < playerRed.getMoves().size(); i++) {
-
                                         int tmp = playerRed.getMoves().get(i);
                                         if (playerRed.getMovePieceFrom() == tmp) {
+                                            for (checkerViewModel e: redCheckersViewModel){
+                                                if (e.getCurrentHitbox() == playerRed.getMovePieceFrom()){
+                                                    e.setCurrentHitbox(placeInBoard);
+                                                    playerRed.setMovePieceTo(placeInBoard);
+                                                }
+                                            }
                                             playerRed.getMoves().remove(i);
                                             rules.remove(playerRed.getMovePieceFrom(), 5);
-
                                         }
                                     }
                                     playerRed.getMoves().add(placeInBoard);
-                                    playerRed.setMovePieceTo(0);
-                                    playerRed.setMovePieceFrom(0);
-                                    Log.d("TAG", "onTouch: " + imageID);
+
+
                                     AnimatorSet animationSet = new AnimatorSet();
                                     animationSet.play(ObjectAnimator.ofFloat(getSelectedChecker(), "x", getCentrumXOfHitbox()))
                                             .with(ObjectAnimator.ofFloat(getSelectedChecker(), "y", getCentrumYOfHitbox()));
                                     animationSet.setDuration(1000);
                                     animationSet.start();
+
+                                    playerRed.setMovePieceTo(0);
+                                    playerRed.setMovePieceFrom(0);
+
                                     v.invalidate();
 
                                     if(rules.remove(placeInBoard)){
@@ -315,7 +344,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
                     }
                 }
 
-                else if(rules.getState() == 1){
+                else if(rules.getState() == 1){ // Blå får ta bort en av röds checkers
                     if(rules.remove(placeInBoard) && (rules.getTurn() == playerBlue.getColorID())){
                         if(checkValid() && (rules.board(placeInBoard) == 5)){
 
@@ -323,8 +352,15 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
                                 int tmp = playerRed.getMoves().get(i);
                                 if(tmp == placeInBoard) {
                                     rules.setTurn(playerRed.getColorID());
-                                    redCheckers.get(i+1).setVisibility(View.GONE);
-                                    redCheckers.remove(playerRed.getMoves().get(i));
+                                    for (checkerViewModel e: redCheckersViewModel){
+                                        if(e.getCurrentHitbox() == tmp){
+                                            e.setCurrentHitbox(0);
+                                            e.setDeleted(true);
+                                            e.getCheckerId().setVisibility(View.INVISIBLE);
+                                            playerRed.setNrOfRemovedCheckers(playerRed.getNrOfRemovedCheckers()+1);
+                                        }
+                                    }
+
 
                                     playerRed.getMoves().remove(i);
                                     rules.remove(placeInBoard, 5);
@@ -333,16 +369,24 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
                                 }
                             }
                         }
-                    } else if(rules.remove(placeInBoard) && (rules.getTurn() == playerRed.getColorID())){
+                    } else if(rules.remove(placeInBoard) && (rules.getTurn() == playerRed.getColorID())){//Röd får ta bort en av blås cehckers
 
                         if(checkValid() && (rules.board(placeInBoard) == 4)){
 
                             for(int i = 0; i < playerBlue.getMoves().size(); i++) {
                                 int tmp = playerBlue.getMoves().get(i);
                                 if(tmp == placeInBoard) {
-                                    blueCheckers.get(i+1).setVisibility(View.GONE);
-                                    blueCheckers.remove(playerBlue.getMoves().get(i));
+                                    for (checkerViewModel e: blueCheckersViewModel){
+                                        if(e.getCurrentHitbox() == tmp){
+                                            e.setCurrentHitbox(0);
+                                            e.setDeleted(true);
+                                            e.getCheckerId().setVisibility(View.INVISIBLE);
+                                            playerBlue.setNrOfRemovedCheckers(playerBlue.getNrOfRemovedCheckers()+1);
+                                        }
+                                    }
+
                                     playerBlue.getMoves().remove(i);
+
                                     rules.remove(placeInBoard, 4);
                                     rules.setState(0);
                                     rules.setTurn(playerBlue.getColorID());
@@ -353,18 +397,34 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
                         }
                     }
                 }
-                if (checkWin(playerBlue) || checkWin(playerRed)){
+                if (checkWin(playerRed)){
                    // gameFinished();
+                    new AlertDialog.Builder(this).setTitle("Game finished").setMessage("Blue has won!").setNeutralButton("Return to menu", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            finish();
+                        }
+                    }).show();
+                }else if(checkWin(playerBlue)){
+                    new AlertDialog.Builder(this).setTitle("Game finished").setMessage("Red has won!").setNeutralButton("Return to menu", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            internalFile.clearData();
+                            finish();
+                        }
+                    }).show();
                 }
-
                 return true;
-
 
             default:
                 return false;
         }
     }
 
+    /**
+     * Helper method to get the current checker before 9 are placed
+     * @return the current checker to be placed
+     */
     private ImageView getCurrentChecker()
     {
        if (rules.getTurn() == 1){//Red
@@ -376,40 +436,134 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
        return null;
     }
 
+    /**
+     * Helper method to get the correct ImageView located at the selected cooridnates
+     * @return the selected ImageView
+     */
     private ImageView getSelectedChecker(){
         if (rules.getTurn() == 1){//Red
-            Log.d("TAG", "getSelectedChecker: " + imageID);
-            return redCheckers.get(imageID);
-
+            for (checkerViewModel checker: redCheckersViewModel){
+                //Log.d("TAG", "getSelectedChecker: " + checker.getCurrentHitbox() + " curfrom: " + playerRed.getMovePieceFrom());
+                if(checker.getCurrentHitbox() == playerRed.getMovePieceTo()){
+                  //  Log.d("TAG", "getSelectedChecker: " + checker.getCurrentHitbox() + " from: " + playerRed.getMovePieceFrom() + " ID: " + checker.getCheckerId());
+                    return checker.getCheckerId();
+                }
+            }
         }else if (rules.getTurn() == 2){//blue
-            Log.d("TAG", "getSelectedChecker: " + imageID);
-            return blueCheckers.get(imageID);
+            for (checkerViewModel checker: blueCheckersViewModel){
+                if(checker.getCurrentHitbox() == playerBlue.getMovePieceTo()){
+                    return checker.getCheckerId();
+                }
+            }
         }
         return null;
     }
 
-    private float getCentrumXOfHitbox(){
-
-        float x = width - validPlaces.get(placeInBoard-1).left;
-        float z = width - validPlaces.get(placeInBoard-1).right;
-
-        return (width - (z + ((x-z)/2)) - redChecker1.getWidth()/2);
+    /**
+     * Calculates the centrum of a hitbox.
+     * @return center x-value of a hitbox
+     */
+    public float getCentrumXOfHitbox(){
+        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
+            return (validPlaces.get(placeInBoard-1).centerX() - getResources().getDimension(R.dimen.checker_size)/2);
+        }
+        else{
+            return (getResources().getDimension(R.dimen.left_boarder) + (validPlaces.get(placeInBoard-1).centerX() - getResources().getDimension(R.dimen.checker_size)/2));
+        }
     }
 
+    /**
+     * Calculates the centrum of a hitbox.
+     * @return center y-value of a hitbox
+     */
     private float getCentrumYOfHitbox(){
-        float x = height - validPlaces.get(placeInBoard-1).bottom;
-        float z = height - validPlaces.get(placeInBoard-1).top;
-
-        return (height - (z + ((x-z)/2)) - redChecker1.getHeight()/2);
+        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            return (validPlaces.get(placeInBoard-1).centerY() - getResources().getDimension(R.dimen.checker_size)/2);
+        }else{
+            return (validPlaces.get(placeInBoard-1).centerY() - getResources().getDimension(R.dimen.checker_size)/2);
+        }
     }
 
+    /**
+     * Helper method to place checker at the appropriate coordinate when re-entering the app.
+     */
+    private void replaceCheckers(){
+        for (int i= 0; i < playerBlue.getMoves().size(); i++){
+            blueCheckersViewModel.get(i).setCurrentHitbox(playerBlue.getMoves().get(i));
+            placeInBoard = blueCheckersViewModel.get(i).getCurrentHitbox();
+            if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+                AnimatorSet animationSet = new AnimatorSet();
+                animationSet.play(ObjectAnimator.ofFloat(blueCheckersViewModel.get(i).getCheckerId(), "x", (float) (getCentrumXOfHitbox() )))
+                        .with(ObjectAnimator.ofFloat(blueCheckersViewModel.get(i).getCheckerId(), "y", (float) (getCentrumYOfHitbox() )));
+                animationSet.setDuration(2000);
+                animationSet.start();
+            }else{
+                AnimatorSet animationSet = new AnimatorSet();
+                animationSet.play(ObjectAnimator.ofFloat(blueCheckersViewModel.get(i).getCheckerId(), "x", (getCentrumXOfHitbox() )))
+                        .with(ObjectAnimator.ofFloat(blueCheckersViewModel.get(i).getCheckerId(), "y", (getCentrumYOfHitbox() )) );
+                animationSet.setDuration(2000);
+                animationSet.start();
+            }
+
+        }
+        for (int i= 0; i < playerRed.getMoves().size(); i++){
+            redCheckersViewModel.get(i).setCurrentHitbox(playerRed.getMoves().get(i));
+            placeInBoard = redCheckersViewModel.get(i).getCurrentHitbox();
+            if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+                AnimatorSet animationSet = new AnimatorSet();
+                animationSet.play(ObjectAnimator.ofFloat(redCheckersViewModel.get(i).getCheckerId(), "x", getCentrumXOfHitbox()))
+                        .with(ObjectAnimator.ofFloat(redCheckersViewModel.get(i).getCheckerId(), "y", getCentrumYOfHitbox()));
+                animationSet.setDuration(2000);
+                animationSet.start();
+            }else{
+                AnimatorSet animationSet = new AnimatorSet();
+                animationSet.play(ObjectAnimator.ofFloat(redCheckersViewModel.get(i).getCheckerId(), "x", getCentrumXOfHitbox()))
+                        .with(ObjectAnimator.ofFloat(redCheckersViewModel.get(i).getCheckerId(), "y", getCentrumYOfHitbox()));
+                animationSet.setDuration(2000);
+                animationSet.start();
+            }
+        }
+        gameView.invalidate();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        new Thread(new Runnable(){
+            @Override
+            public void run() {
+                dir = getFilesDir();
+                internalFile.saveData(dir,
+                        playerBlue.getMoves(),
+                        playerRed.getMoves(),
+                        playerBlue.getNrOfMarkersPlaced(),
+                        playerRed.getNrOfMarkersPlaced(),
+                        rules.getTurn(),
+                        rules.getState(),
+                        playerBlue.getNrOfRemovedCheckers(),
+                        playerRed.getNrOfRemovedCheckers());
+            }
+        }).start();
+    }
+
+    /**
+     * Helper method to check if a player has won
+     * @param color the playercolor
+     * @return true if color has won, false if not
+     */
     private boolean checkWin(Player color){
-        if((color.getMoves().size() < 3) && (color.getNrOfMarkersPlaced() == 9)){
+        if(((color.getMoves().size() < 3) && (color.getNrOfMarkersPlaced() == 9))){
+            internalFile.clearData();
             return true;
         }
         else return false;
     }
 
+    /**
+     * Helper method to check if a press on screen is in a valid location
+     * @return true if valid, false if invalid
+     */
     private boolean checkValid(){
         boolean validity = false;
         for(int i = 0; i < validPlaces.size(); i++){
@@ -427,7 +581,10 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         return validity;
     }
 
-    private void initHitboxes(){
+    /**
+     * Initiates all the hitboxes for the gameboard in portrait mode
+     */
+    private void initHitboxesPortrait(){
 
         //1
         Rect validplace = new Rect();
@@ -452,7 +609,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.right = validplace.left + 100;
         validplace.bottom = validplace.top + 100;
         validPlaces.add(validplace);
-
+        Log.d("center", "initHitboxesPortrait: X: " + validplace.centerX() + " Y: " + validplace.centerY());
         //4
         validplace = new Rect();
         validplace.left = width/2 -50;
@@ -619,6 +776,207 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.right = validplace.left + 100;
         validplace.top = height/4 + height/4 +50;
         validplace.bottom = validplace.top - 100;
+        validPlaces.add(validplace);
+
+    }
+
+    /**
+     * Initiates all the hitboxes for the gameboard in landscape mode
+     */
+    private void initHitboxesLandscape(){
+
+        //1
+        Rect validplace = new Rect();
+        validplace.left = width/4 -75;
+        validplace.right = validplace.left + 100;
+        validplace.top =(height/3) +50;
+        validplace.bottom = validplace.top - 100;
+        validPlaces.add(validplace);
+
+
+        //2
+        validplace = new Rect();
+        validplace.left = width/8 -25;
+        validplace.right = validplace.left + 100;
+        validplace.top =((height/8) - (((height/8) - (height/8 + height/8 -50))/3))+75;
+        validplace.bottom = validplace.top - 100;
+        validPlaces.add(validplace);
+
+        //3
+        validplace = new Rect();
+        validplace.left =  25 ;
+        validplace.right = validplace.left + 100;
+        validplace.top = 25;
+        validplace.bottom = validplace.top + 100;
+        validPlaces.add(validplace);
+        Log.d("cancer", "initHitboxesLANDSCAPE: X: " + validplace.centerX() + " Y: " + validplace.centerY());
+
+        //4
+        validplace = new Rect();
+        validplace.left = width/3 ;
+        validplace.right = validplace.left + 100;
+        validplace.top =(height/3) +50;
+        validplace.bottom = validplace.top - 100;
+        validPlaces.add(validplace);
+
+        //5
+        validplace = new Rect();
+        validplace.left = width/3 ;
+        validplace.right = validplace.left + 100;
+        validplace.top =((height/8) - (((height/8) - (height/8 + height/8 -50))/3))+75;
+        validplace.bottom = validplace.top - 100;
+        validPlaces.add(validplace);
+
+        //6
+        validplace = new Rect();
+        validplace.left = width/3 ;
+        validplace.right = validplace.left + 100;
+        validplace.top = 25;
+        validplace.bottom = validplace.top + 100;
+        validPlaces.add(validplace);
+
+        //7
+        validplace = new Rect();
+        validplace.left = (int)(width*0.44);
+        validplace.right = validplace.left + 100;
+        validplace.top =(height/3) +50;
+        validplace.bottom = validplace.top - 100;
+        validPlaces.add(validplace);
+
+        //8
+        validplace = new Rect();
+        validplace.left = (int) (width*0.54);
+        validplace.right = validplace.left + 100;
+        validplace.top =((height/8) - (((height/8) - (height/8 + height/8 -50))/3))+75;
+        validplace.bottom = validplace.top - 100;
+        validPlaces.add(validplace);
+
+        //9
+        validplace = new Rect();
+        validplace.left = (int) (width*0.65);
+        validplace.right = validplace.left + 100;
+        validplace.top = 25;
+        validplace.bottom = validplace.top + 100;
+        validPlaces.add(validplace);
+
+        //10
+        validplace = new Rect();
+        validplace.left = (int)(width*0.44);
+        validplace.right = validplace.left + 100;
+        validplace.top = (int) (height*0.4) + 50;
+        validplace.bottom = validplace.top + 100;
+        validPlaces.add(validplace);
+
+        //11
+        validplace = new Rect();
+        validplace.left = (int) (width*0.54);
+        validplace.right = validplace.left + 100;
+        validplace.top = (int) (height*0.4) + 50;
+        validplace.bottom = validplace.top + 100;
+        validPlaces.add(validplace);
+
+        //12
+        validplace = new Rect();
+        validplace.left = (int) (width*0.65);
+        validplace.right = validplace.left + 100;
+        validplace.top = (int) (height*0.4) + 50;
+        validplace.bottom = validplace.top + 100;
+        validPlaces.add(validplace);
+
+        //13
+        validplace = new Rect();
+        validplace.left = (int)(width*0.44);
+        validplace.right = validplace.left + 100;
+        validplace.top = (int) (height*0.57);
+        validplace.bottom = validplace.top + 100;
+        validPlaces.add(validplace);
+
+        //14
+        validplace = new Rect();
+        validplace.left = (int) (width*0.54);
+        validplace.right = validplace.left + 100;
+        validplace.top = (int) (height*0.71);
+        validplace.bottom = validplace.top + 100;
+        validPlaces.add(validplace);
+
+        //15
+        validplace = new Rect();
+        validplace.left = (int) (width*0.65);
+        validplace.right = validplace.left + 100;
+        validplace.top = (int) (height*0.85);
+        validplace.bottom = validplace.top + 100;
+        validPlaces.add(validplace);
+
+        //16
+        validplace = new Rect();
+        validplace.left = width/3 ;
+        validplace.right = validplace.left + 100;
+        validplace.top = (int) (height*0.57);
+        validplace.bottom = validplace.top + 100;
+        validPlaces.add(validplace);
+
+        //17
+        validplace = new Rect();
+        validplace.left = width/3 ;
+        validplace.right = validplace.left + 100;
+        validplace.top = (int) (height*0.71);
+        validplace.bottom = validplace.top + 100;
+        validPlaces.add(validplace);
+
+        //18
+        validplace = new Rect();
+        validplace.left = width/3 ;
+        validplace.right = validplace.left + 100;
+        validplace.top = (int) (height*0.85);
+        validplace.bottom = validplace.top + 100;
+        validPlaces.add(validplace);
+
+        //19
+        validplace = new Rect();
+        validplace.left = width/4 -75;
+        validplace.right = validplace.left + 100;
+        validplace.top = (int) (height*0.57);
+        validplace.bottom = validplace.top + 100;
+        validPlaces.add(validplace);
+
+        //20
+        validplace = new Rect();
+        validplace.left = width/8 -25;
+        validplace.right = validplace.left + 100;
+        validplace.top = (int) (height*0.71);
+        validplace.bottom = validplace.top + 100;
+        validPlaces.add(validplace);
+
+        //21
+        validplace = new Rect();
+        validplace.left =  25 ;
+        validplace.right = validplace.left + 100;
+        validplace.top = (int) (height*0.85);
+        validplace.bottom = validplace.top + 100;
+        validPlaces.add(validplace);
+
+        //22
+        validplace = new Rect();
+        validplace.left = width/4 -75;
+        validplace.right = validplace.left + 100;
+        validplace.top = (int) (height*0.4) + 50;
+        validplace.bottom = validplace.top + 100;
+        validPlaces.add(validplace);
+
+        //23
+        validplace = new Rect();
+        validplace.left = width/8 -25;
+        validplace.right = validplace.left + 100;
+        validplace.top = (int) (height*0.4) + 50;
+        validplace.bottom = validplace.top + 100;
+        validPlaces.add(validplace);
+
+        //nr 24
+        validplace = new Rect();
+        validplace.left = 25;
+        validplace.right = validplace.left + 100;
+        validplace.top = (int) (height*0.4) + 50;
+        validplace.bottom = validplace.top + 100;
         validPlaces.add(validplace);
 
     }

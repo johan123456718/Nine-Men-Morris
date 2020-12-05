@@ -17,10 +17,19 @@
         />
 
     <ImageView
+        android:id="@+id/hitboxplaceholder"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@color/cardview_dark_background"
+        />
+
+    <ImageView
         android:id="@+id/blueCheck1"
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:scaleType="fitXY"
+        android:layout_marginLeft="80dp"
+        android:layout_marginBottom="80dp"
         android:layout_alignParentBottom="true"
         android:src="@mipmap/blue" />
 
@@ -29,14 +38,18 @@
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:scaleType="fitXY"
-        android:layout_alignParentStart="true"
+        android:layout_marginRight="80dp"
+        android:layout_marginBottom="80dp"
         android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
         android:src="@mipmap/red" />
 
     <ImageView
         android:id="@+id/blueCheck2"
         android:layout_width="40dp"
         android:layout_height="40dp"
+        android:layout_marginLeft="80dp"
+        android:layout_marginBottom="40dp"
         android:scaleType="fitXY"
         android:layout_alignParentBottom="true"
         android:src="@mipmap/blue" />
@@ -45,15 +58,18 @@
         android:id="@+id/redCheck2"
         android:layout_width="40dp"
         android:layout_height="40dp"
+        android:layout_marginRight="80dp"
+        android:layout_marginBottom="40dp"
         android:scaleType="fitXY"
-        android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
         android:src="@mipmap/red" />
 
     <ImageView
         android:id="@+id/blueCheck3"
         android:layout_width="40dp"
         android:layout_height="40dp"
+        android:layout_marginLeft="80dp"
         android:scaleType="fitXY"
         android:layout_alignParentBottom="true"
         android:src="@mipmap/blue" />
@@ -62,15 +78,18 @@
         android:id="@+id/redCheck3"
         android:layout_width="40dp"
         android:layout_height="40dp"
+        android:layout_marginRight="80dp"
         android:scaleType="fitXY"
-        android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
         android:src="@mipmap/red" />
 
     <ImageView
         android:id="@+id/blueCheck4"
         android:layout_width="40dp"
         android:layout_height="40dp"
+        android:layout_marginLeft="40dp"
+        android:layout_marginBottom="80dp"
         android:scaleType="fitXY"
         android:layout_alignParentBottom="true"
         android:src="@mipmap/blue" />
@@ -79,10 +98,11 @@
         android:id="@+id/redCheck4"
         android:layout_width="40dp"
         android:layout_height="40dp"
+        android:layout_marginRight="40dp"
+        android:layout_marginBottom="80dp"
         android:scaleType="fitXY"
-        android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="82dp"
+        android:layout_alignParentEnd="true"
         android:src="@mipmap/red" />
 
     <ImageView
@@ -90,6 +110,8 @@
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:scaleType="fitXY"
+        android:layout_marginBottom="40dp"
+        android:layout_marginLeft="40dp"
         android:layout_alignParentBottom="true"
         android:src="@mipmap/blue" />
 
@@ -97,16 +119,18 @@
         android:id="@+id/redCheck5"
         android:layout_width="40dp"
         android:layout_height="40dp"
+        android:layout_marginRight="40dp"
+        android:layout_marginBottom="40dp"
         android:scaleType="fitXY"
-        android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="82dp"
+        android:layout_alignParentEnd="true"
         android:src="@mipmap/red" />
 
     <ImageView
         android:id="@+id/blueCheck6"
         android:layout_width="40dp"
         android:layout_height="40dp"
+        android:layout_marginLeft="40dp"
         android:scaleType="fitXY"
         android:layout_alignParentBottom="true"
         android:src="@mipmap/blue" />
@@ -115,16 +139,17 @@
         android:id="@+id/redCheck6"
         android:layout_width="40dp"
         android:layout_height="40dp"
+        android:layout_marginRight="40dp"
         android:scaleType="fitXY"
-        android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="82dp"
+        android:layout_alignParentEnd="true"
         android:src="@mipmap/red" />
 
     <ImageView
         android:id="@+id/blueCheck7"
         android:layout_width="40dp"
         android:layout_height="40dp"
+        android:layout_marginBottom="80dp"
         android:scaleType="fitXY"
         android:layout_alignParentBottom="true"
         android:src="@mipmap/blue" />
@@ -133,16 +158,17 @@
         android:id="@+id/redCheck7"
         android:layout_width="40dp"
         android:layout_height="40dp"
+        android:layout_marginBottom="80dp"
         android:scaleType="fitXY"
-        android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="82dp"
+        android:layout_alignParentEnd="true"
         android:src="@mipmap/red" />
 
     <ImageView
         android:id="@+id/blueCheck8"
         android:layout_width="40dp"
         android:layout_height="40dp"
+        android:layout_marginBottom="40dp"
         android:scaleType="fitXY"
         android:layout_alignParentBottom="true"
         android:src="@mipmap/blue" />
@@ -152,9 +178,9 @@
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:scaleType="fitXY"
-        android:layout_alignParentStart="true"
+        android:layout_marginBottom="40dp"
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="82dp"
+        android:layout_alignParentEnd="true"
         android:src="@mipmap/red" />
 
     <ImageView
@@ -170,10 +196,8 @@
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:scaleType="fitXY"
-        android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="82dp"
+        android:layout_alignParentEnd="true"
         android:src="@mipmap/red" />
-
 
 </RelativeLayout>

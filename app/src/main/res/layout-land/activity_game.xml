@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/activity_game"
+    android:clickable="true"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    tools:context=".GameActivity"
+    android:background="@color/fin">
+
+
+    <com.example.nine_men_morris.GameView
+        android:id="@+id/drawView"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+
+        app:layout_constraintEnd_toStartOf="@+id/cardViewRight"
+        app:layout_constraintStart_toEndOf="@+id/cardViewLeft"
+        tools:layout_editor_absoluteY="0dp" />
+
+    <ImageView
+        android:id="@+id/redCheck1"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginEnd="0dp"
+        android:layout_marginBottom="0dp"
+        android:scaleType="fitXY"
+        android:src="@mipmap/red"
+        app:layout_constraintBottom_toTopOf="@+id/redCheck2"
+        app:layout_constraintEnd_toStartOf="@+id/redCheck4" />
+
+    <ImageView
+        android:id="@+id/redCheck4"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="0dp"
+        android:scaleType="fitXY"
+        android:src="@mipmap/red"
+        app:layout_constraintBottom_toTopOf="@+id/redCheck5"
+        app:layout_constraintEnd_toStartOf="@+id/redCheck7" />
+
+    <ImageView
+        android:id="@+id/redCheck5"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginEnd="0dp"
+        android:layout_marginBottom="0dp"
+        android:scaleType="fitXY"
+        android:src="@mipmap/red"
+        app:layout_constraintBottom_toTopOf="@+id/redCheck6"
+        app:layout_constraintEnd_toStartOf="@+id/redCheck8" />
+
+    <ImageView
+        android:id="@+id/redCheck6"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="0dp"
+        android:scaleType="fitXY"
+        android:src="@mipmap/red"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/redCheck9" />
+
+    <ImageView
+        android:id="@+id/redCheck7"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="0dp"
+        android:scaleType="fitXY"
+        android:src="@mipmap/red"
+        app:layout_constraintBottom_toTopOf="@+id/redCheck8"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <ImageView
+        android:id="@+id/redCheck3"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="0dp"
+        android:scaleType="fitXY"
+        android:src="@mipmap/red"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/redCheck6" />
+
+    <ImageView
+        android:id="@+id/redCheck8"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="0dp"
+        android:scaleType="fitXY"
+        android:src="@mipmap/red"
+        app:layout_constraintBottom_toTopOf="@+id/redCheck9"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <ImageView
+        android:id="@+id/redCheck2"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="0dp"
+        android:scaleType="fitXY"
+        android:src="@mipmap/red"
+        app:layout_constraintBottom_toTopOf="@+id/redCheck3"
+        app:layout_constraintEnd_toStartOf="@+id/redCheck5" />
+
+    <ImageView
+        android:id="@+id/redCheck9"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="0dp"
+        android:scaleType="fitXY"
+        android:src="@mipmap/red"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardViewLeft"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <ImageView
+        android:id="@+id/blueCheck2"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentBottom="true"
+        android:scaleType="fitXY"
+        android:src="@mipmap/blue"
+        app:layout_constraintBottom_toTopOf="@+id/blueCheck3"
+        app:layout_constraintEnd_toEndOf="@+id/cardViewLeft" />
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardViewRight"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:background="@android:color/transparent"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+    </androidx.cardview.widget.CardView>
+
+    <ImageView
+        android:id="@+id/blueCheck9"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentBottom="true"
+        android:scaleType="fitXY"
+        android:src="@mipmap/blue"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/blueCheck6" />
+
+    <ImageView
+        android:id="@+id/blueCheck8"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentBottom="true"
+        android:scaleType="fitXY"
+        android:src="@mipmap/blue"
+        app:layout_constraintBottom_toTopOf="@+id/blueCheck9"
+        app:layout_constraintEnd_toStartOf="@+id/blueCheck5" />
+
+    <ImageView
+        android:id="@+id/blueCheck5"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentBottom="true"
+        android:scaleType="fitXY"
+        android:src="@mipmap/blue"
+        app:layout_constraintBottom_toTopOf="@+id/blueCheck6"
+        app:layout_constraintEnd_toStartOf="@+id/blueCheck2" />
+
+    <ImageView
+        android:id="@+id/blueCheck1"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentBottom="true"
+        android:scaleType="fitXY"
+        android:src="@mipmap/blue"
+        app:layout_constraintBottom_toTopOf="@+id/blueCheck2"
+        app:layout_constraintEnd_toEndOf="@+id/cardViewLeft"
+        tools:layout_editor_absoluteX="80dp" />
+
+    <ImageView
+        android:id="@+id/blueCheck4"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentBottom="true"
+        android:scaleType="fitXY"
+        android:src="@mipmap/blue"
+        app:layout_constraintBottom_toTopOf="@+id/blueCheck5"
+        app:layout_constraintEnd_toStartOf="@+id/blueCheck1" />
+
+    <ImageView
+        android:id="@+id/blueCheck3"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentBottom="true"
+        android:scaleType="fitXY"
+        android:src="@mipmap/blue"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/cardViewLeft"
+        tools:layout_editor_absoluteX="80dp" />
+
+    <ImageView
+        android:id="@+id/blueCheck6"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentBottom="true"
+        android:scaleType="fitXY"
+        android:src="@mipmap/blue"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/blueCheck3" />
+
+    <ImageView
+        android:id="@+id/blueCheck7"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentBottom="true"
+        android:scaleType="fitXY"
+        android:src="@mipmap/blue"
+        app:layout_constraintBottom_toTopOf="@+id/blueCheck8"
+        app:layout_constraintEnd_toStartOf="@+id/blueCheck4"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

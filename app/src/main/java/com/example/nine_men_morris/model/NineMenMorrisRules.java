@@ -1,6 +1,8 @@
 package com.example.nine_men_morris.model;
 
 
+import android.content.res.Configuration;
+import android.net.PlatformVpnProfile;
 import android.util.Log;
 
 /**
@@ -175,12 +177,10 @@ public class NineMenMorrisRules {
         while (count < 23) {
             if (gameplan[count] != EMPTY_SPACE && gameplan[count] != color) {
                 countMarker++;
-                Log.d("TAG", "win: GOING");
             }
             count++;
         }
         if (bluemarker <= 0 && redmarker <= 0 && countMarker < 3) {
-            Log.d("TAG", "win: hihi");
             return true;
         }
         else
@@ -268,5 +268,21 @@ public class NineMenMorrisRules {
 
     public void setState(int state) {
         this.state = state;
+    }
+
+    /**
+     * Initiates the board after a reload from file
+     */
+    public void initAfterReload(Player red, Player blue){
+        for (int move: red.getMoves()){
+            gameplan[move] = 5;
+            redmarker--;
+            red.setNrOfMarkers(red.getNrOfMarkers()-1);
+        }
+        for (int move: blue.getMoves()){
+            gameplan[move] = 4;
+            bluemarker--;
+            blue.setNrOfMarkers(blue.getNrOfMarkers()-1);
+        }
     }
 }

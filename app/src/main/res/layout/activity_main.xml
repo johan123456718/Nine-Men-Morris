@@ -20,22 +20,21 @@
         android:id="@+id/startButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textFontWeight="1"
         android:layout_centerInParent="true"
+        android:backgroundTint="@color/teal_700"
         android:text="@string/start"
-        android:backgroundTint="@color/teal_700">
-    </Button>
+        android:textFontWeight="1"></Button>
 
     <Button
         android:id="@+id/loadButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textFontWeight="1"
         android:layout_alignParentBottom="true"
+        android:layout_marginBottom="100dp"
         android:layout_centerInParent="true"
-        android:layout_marginBottom="280dp"
         android:backgroundTint="@color/teal_700"
-        android:text="@string/load_game">
+        android:text="@string/load_game"
+        android:textFontWeight="1">
 
     </Button>
 
