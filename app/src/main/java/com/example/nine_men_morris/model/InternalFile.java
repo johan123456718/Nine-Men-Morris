@@ -32,7 +32,11 @@ public class InternalFile {
                          ArrayList<Integer> playerBlueMoves,
                          ArrayList<Integer> playerRedMoves,
                          int nrOfBlueMarkersPlaced,
-                         int nrOfRedMarkersPlaced){
+                         int nrOfRedMarkersPlaced,
+                         int turn,
+                         int state,
+                         int nrOfRemovedBlueCheckers,
+                         int nrOfRemovedRedCheckers){
         try{
             FileOutputStream fileOutputStream = new FileOutputStream(new File(dir, NAME_OF_FILE));
             BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream, 1024*8);
@@ -41,6 +45,10 @@ public class InternalFile {
             objectOutputStream.writeObject(playerRedMoves);
             objectOutputStream.writeObject(nrOfBlueMarkersPlaced);
             objectOutputStream.writeObject(nrOfRedMarkersPlaced);
+            objectOutputStream.writeObject(turn);
+            objectOutputStream.writeObject(state);
+            objectOutputStream.writeObject(nrOfRemovedBlueCheckers);
+            objectOutputStream.writeObject(nrOfRemovedRedCheckers);
             objectOutputStream.reset();
             objectOutputStream.close();
             fileOutputStream.close();
@@ -49,7 +57,7 @@ public class InternalFile {
         }
     }
 
-    public void loadData(File dir, Player playerBlue, Player playerRed){
+    public void loadData(File dir, Player playerBlue, Player playerRed, NineMenMorrisRules rules){
         try {
             FileInputStream fileInputStream = new FileInputStream(new File(dir, NAME_OF_FILE));
             ObjectInputStream objectInputStream = new ObjectInputStream(new BufferedInputStream(fileInputStream));
@@ -57,6 +65,10 @@ public class InternalFile {
             playerRed.setMoves((ArrayList<Integer>)objectInputStream.readObject());
             playerBlue.setNrOfMarkersPlaced((int)objectInputStream.readObject());
             playerRed.setNrOfMarkersPlaced((int)objectInputStream.readObject());
+            rules.setTurn((int) objectInputStream.readObject());
+            rules.setState((int) objectInputStream.readObject());
+            playerBlue.setNrOfRemovedCheckers((int) objectInputStream.readObject());
+            playerRed.setNrOfRemovedCheckers((int) objectInputStream.readObject());
             objectInputStream.close();
             fileInputStream.close();
         }catch(IOException | ClassNotFoundException e){
@@ -65,14 +77,11 @@ public class InternalFile {
     }
 
     public void clearData(){
-        try{
-            FileOutputStream writer = new FileOutputStream(NAME_OF_FILE);
-            writer.write(("").getBytes());
-            writer.flush(); // flush the stream
-        }catch (Exception e ){
+        try {
+            new FileOutputStream(new File("/data/user/0/com.example.nine_men_morris/files", NAME_OF_FILE)).close();
+        }catch(IOException e){
             e.printStackTrace();
         }
-
     }
 
 

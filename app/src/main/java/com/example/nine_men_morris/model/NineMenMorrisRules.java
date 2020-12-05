@@ -277,13 +277,12 @@ public class NineMenMorrisRules {
         for (int move: red.getMoves()){
             gameplan[move] = 5;
             redmarker--;
+            red.setNrOfMarkers(red.getNrOfMarkers()-1);
         }
         for (int move: blue.getMoves()){
             gameplan[move] = 4;
             bluemarker--;
+            blue.setNrOfMarkers(blue.getNrOfMarkers()-1);
         }
-
     }
-
-
 }

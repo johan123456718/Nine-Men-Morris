@@ -7,24 +7,19 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Rect;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.Switch;
-import android.widget.Toast;
 
 import com.example.nine_men_morris.model.InternalFile;
 import com.example.nine_men_morris.model.NineMenMorrisRules;
 import com.example.nine_men_morris.model.Player;
-import com.example.nine_men_morris.model.godClass;
+import com.example.nine_men_morris.model.checkerViewModel;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -49,11 +44,12 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
     private NineMenMorrisRules rules;
     private ArrayList<Rect> validPlaces;
     private Player playerRed, playerBlue;
-    private int height, width, placeInBoard, imageScale;
+    private int height, width, placeInBoard, imageScale, nrOfRemovedRedCheckers, nrOfRemovedBlueCheckers;
     private float touchedX, touchedY;
-    private ArrayList<godClass> RedGods, BlueGods;
+    private ArrayList<checkerViewModel> redCheckersViewModel, blueCheckersViewModel;
     private InternalFile internalFile;
     private File dir;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -76,6 +72,9 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validPlaces = new ArrayList<>();
         playerRed = new Player(2); //RED
         playerBlue = new Player(1); //Blue
+        nrOfRemovedRedCheckers = 0;
+        nrOfRemovedBlueCheckers = 0;
+
         if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
             initHitboxesPortrait();
         }else {
@@ -86,19 +85,21 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         Log.d("cancer", "onCreate: ");
     }
 
-
+    /**
+     * Helper method to initiate all the ImageViews for the checkers.
+     */
     private void initCheckers(){
         blueCheckers = new ArrayList<>();
         redCheckers = new ArrayList<>();
-        RedGods = new ArrayList<>();
-        BlueGods = new ArrayList<>();
+        redCheckersViewModel = new ArrayList<>();
+        blueCheckersViewModel = new ArrayList<>();
 
         blueChecker1 = (ImageView) findViewById(R.id.blueCheck1);
         redChecker1 = (ImageView) findViewById(R.id.redCheck1);
         blueCheckers.add(blueChecker1);
         redCheckers.add(redChecker1);
-        RedGods.add(new godClass(redChecker1));
-        BlueGods.add(new godClass(blueChecker1));
+        redCheckersViewModel.add(new checkerViewModel(redChecker1));
+        blueCheckersViewModel.add(new checkerViewModel(blueChecker1));
         imageScale = redChecker1.getMeasuredHeight();
         Log.d("center", "initCheckers: scalen: " + imageScale);
 
@@ -106,57 +107,57 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         redChecker2 = findViewById(R.id.redCheck2);
         blueCheckers.add(blueChecker2);
         redCheckers.add(redChecker2);
-        RedGods.add(new godClass(redChecker2));
-        BlueGods.add(new godClass(blueChecker2));
+        redCheckersViewModel.add(new checkerViewModel(redChecker2));
+        blueCheckersViewModel.add(new checkerViewModel(blueChecker2));
 
         blueChecker3 = findViewById(R.id.blueCheck3);
         redChecker3 = findViewById(R.id.redCheck3);
         blueCheckers.add(blueChecker3);
         redCheckers.add(redChecker3);
-        RedGods.add(new godClass(redChecker3));
-        BlueGods.add(new godClass(blueChecker3));
+        redCheckersViewModel.add(new checkerViewModel(redChecker3));
+        blueCheckersViewModel.add(new checkerViewModel(blueChecker3));
 
         blueChecker4 = findViewById(R.id.blueCheck4);
         redChecker4 = findViewById(R.id.redCheck4);
         blueCheckers.add(blueChecker4);
         redCheckers.add(redChecker4);
-        RedGods.add(new godClass(redChecker4));
-        BlueGods.add(new godClass(blueChecker4));
+        redCheckersViewModel.add(new checkerViewModel(redChecker4));
+        blueCheckersViewModel.add(new checkerViewModel(blueChecker4));
 
         blueChecker5 = findViewById(R.id.blueCheck5);
         redChecker5 = findViewById(R.id.redCheck5);
         blueCheckers.add(blueChecker5);
         redCheckers.add(redChecker5);
-        RedGods.add(new godClass(redChecker5));
-        BlueGods.add(new godClass(blueChecker5));
+        redCheckersViewModel.add(new checkerViewModel(redChecker5));
+        blueCheckersViewModel.add(new checkerViewModel(blueChecker5));
 
         blueChecker6 = findViewById(R.id.blueCheck6);
         redChecker6 = findViewById(R.id.redCheck6);
         blueCheckers.add(blueChecker6);
         redCheckers.add(redChecker6);
-        RedGods.add(new godClass(redChecker6));
-        BlueGods.add(new godClass(blueChecker6));
+        redCheckersViewModel.add(new checkerViewModel(redChecker6));
+        blueCheckersViewModel.add(new checkerViewModel(blueChecker6));
 
         blueChecker7 = findViewById(R.id.blueCheck7);
         redChecker7 = findViewById(R.id.redCheck7);
         blueCheckers.add(blueChecker7);
         redCheckers.add(redChecker7);
-        RedGods.add(new godClass(redChecker7));
-        BlueGods.add(new godClass(blueChecker7));
+        redCheckersViewModel.add(new checkerViewModel(redChecker7));
+        blueCheckersViewModel.add(new checkerViewModel(blueChecker7));
 
         blueChecker8 = findViewById(R.id.blueCheck8);
         redChecker8 = findViewById(R.id.redCheck8);
         blueCheckers.add(blueChecker8);
         redCheckers.add(redChecker8);
-        RedGods.add(new godClass(redChecker8));
-        BlueGods.add(new godClass(blueChecker8));
+        redCheckersViewModel.add(new checkerViewModel(redChecker8));
+        blueCheckersViewModel.add(new checkerViewModel(blueChecker8));
 
         blueChecker9 = findViewById(R.id.blueCheck9);
         redChecker9 = findViewById(R.id.redCheck9);
         blueCheckers.add(blueChecker9);
         redCheckers.add(redChecker9);
-        RedGods.add(new godClass(redChecker9));
-        BlueGods.add(new godClass(blueChecker9));
+        redCheckersViewModel.add(new checkerViewModel(redChecker9));
+        blueCheckersViewModel.add(new checkerViewModel(blueChecker9));
 
     }
 
@@ -164,13 +165,31 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
     protected void onStart(){
         super.onStart();
         dir = getFilesDir();
-        internalFile.loadData(dir, playerBlue, playerRed);
+        internalFile.loadData(dir, playerBlue, playerRed, rules);
 
         gameView.setOnTouchListener(this);
-        //if om värden != null
-        replaceCheckers();
-        rules.initAfterReload(playerRed, playerBlue);
 
+        //if om värden != null
+        rules.initAfterReload(playerRed, playerBlue);
+        setCheckerStates();
+        replaceCheckers();
+        Log.d("sex", "onStart: ");
+    }
+
+    /**
+     * Helper method to make removed checkers not show up on screen.
+     */
+    private void setCheckerStates() {
+        if(playerRed.getNrOfRemovedCheckers() > 0){
+           for (int i = 1; i < playerRed.getNrOfRemovedCheckers() +1  ; i++ ){
+               redCheckersViewModel.get(playerRed.getNrOfMarkersPlaced()-i).getCheckerId().setVisibility(View.INVISIBLE);
+           }
+        }
+        if (playerBlue.getNrOfRemovedCheckers() > 0){
+            for (int i = 1; i < playerBlue.getNrOfRemovedCheckers() + 1 ; i++ ){
+                blueCheckersViewModel.get(playerBlue.getNrOfMarkersPlaced()-i).getCheckerId().setVisibility(View.INVISIBLE);
+            }
+        }
     }
 
     @Override
@@ -189,7 +208,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
                         if (rules.getTurn() == playerBlue.getColorID()) {
                             if (checkValid() && rules.legalMove(placeInBoard, playerBlue.getMovePieceTo(), playerBlue.getColorID())) {
                                 playerBlue.getMoves().add(placeInBoard);
-                                BlueGods.get(playerBlue.getNrOfMarkersPlaced()).setCurrentHitbox(placeInBoard);
+                                blueCheckersViewModel.get(playerBlue.getNrOfMarkersPlaced()).setCurrentHitbox(placeInBoard);
                                 playerBlue.setNrOfMarkersPlaced(playerBlue.getNrOfMarkersPlaced() + 1);
                                 playerBlue.setNrOfMarkers(playerBlue.getNrOfMarkers() - 1);
 
@@ -209,7 +228,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
                         } else { // röd för palcera en checker innan 9
                             if (checkValid() && rules.legalMove(placeInBoard, playerRed.getMovePieceTo(), playerRed.getColorID())) {
                                 playerRed.getMoves().add(placeInBoard);
-                                RedGods.get(playerRed.getNrOfMarkersPlaced()).setCurrentHitbox(placeInBoard);
+                                redCheckersViewModel.get(playerRed.getNrOfMarkersPlaced()).setCurrentHitbox(placeInBoard);
                                 playerRed.setNrOfMarkersPlaced(playerRed.getNrOfMarkersPlaced() + 1);
                                 playerRed.setNrOfMarkers(playerRed.getNrOfMarkers() - 1);
 
@@ -236,7 +255,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
 
                                         int tmp = playerBlue.getMoves().get(i);
                                         if (playerBlue.getMovePieceFrom() == tmp) {
-                                            for (godClass e: BlueGods){
+                                            for (checkerViewModel e: blueCheckersViewModel){
                                                 if (e.getCurrentHitbox() == playerBlue.getMovePieceFrom()){
                                                     e.setCurrentHitbox(placeInBoard);
                                                     playerBlue.setMovePieceTo(placeInBoard);
@@ -283,7 +302,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
                                     for (int i = 0; i < playerRed.getMoves().size(); i++) {
                                         int tmp = playerRed.getMoves().get(i);
                                         if (playerRed.getMovePieceFrom() == tmp) {
-                                            for (godClass e: RedGods){
+                                            for (checkerViewModel e: redCheckersViewModel){
                                                 if (e.getCurrentHitbox() == playerRed.getMovePieceFrom()){
                                                     e.setCurrentHitbox(placeInBoard);
                                                     playerRed.setMovePieceTo(placeInBoard);
@@ -333,11 +352,12 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
                                 int tmp = playerRed.getMoves().get(i);
                                 if(tmp == placeInBoard) {
                                     rules.setTurn(playerRed.getColorID());
-                                    for (godClass e: RedGods){
+                                    for (checkerViewModel e: redCheckersViewModel){
                                         if(e.getCurrentHitbox() == tmp){
                                             e.setCurrentHitbox(0);
                                             e.setDeleted(true);
-                                            e.getCheckerId().setVisibility(View.GONE);
+                                            e.getCheckerId().setVisibility(View.INVISIBLE);
+                                            playerRed.setNrOfRemovedCheckers(playerRed.getNrOfRemovedCheckers()+1);
                                         }
                                     }
 
@@ -356,12 +376,12 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
                             for(int i = 0; i < playerBlue.getMoves().size(); i++) {
                                 int tmp = playerBlue.getMoves().get(i);
                                 if(tmp == placeInBoard) {
-                                    for (godClass e: BlueGods){
+                                    for (checkerViewModel e: blueCheckersViewModel){
                                         if(e.getCurrentHitbox() == tmp){
                                             e.setCurrentHitbox(0);
                                             e.setDeleted(true);
-                                            e.getCheckerId().setVisibility(View.GONE);
-                                            //e.setCheckerId(null);
+                                            e.getCheckerId().setVisibility(View.INVISIBLE);
+                                            playerBlue.setNrOfRemovedCheckers(playerBlue.getNrOfRemovedCheckers()+1);
                                         }
                                     }
 
@@ -389,11 +409,11 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
                     new AlertDialog.Builder(this).setTitle("Game finished").setMessage("Red has won!").setNeutralButton("Return to menu", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
+                            internalFile.clearData();
                             finish();
                         }
                     }).show();
                 }
-
                 return true;
 
             default:
@@ -401,6 +421,10 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         }
     }
 
+    /**
+     * Helper method to get the current checker before 9 are placed
+     * @return the current checker to be placed
+     */
     private ImageView getCurrentChecker()
     {
        if (rules.getTurn() == 1){//Red
@@ -412,9 +436,13 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
        return null;
     }
 
+    /**
+     * Helper method to get the correct ImageView located at the selected cooridnates
+     * @return the selected ImageView
+     */
     private ImageView getSelectedChecker(){
         if (rules.getTurn() == 1){//Red
-            for (godClass checker: RedGods){
+            for (checkerViewModel checker: redCheckersViewModel){
                 //Log.d("TAG", "getSelectedChecker: " + checker.getCurrentHitbox() + " curfrom: " + playerRed.getMovePieceFrom());
                 if(checker.getCurrentHitbox() == playerRed.getMovePieceTo()){
                   //  Log.d("TAG", "getSelectedChecker: " + checker.getCurrentHitbox() + " from: " + playerRed.getMovePieceFrom() + " ID: " + checker.getCheckerId());
@@ -422,7 +450,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
                 }
             }
         }else if (rules.getTurn() == 2){//blue
-            for (godClass checker: BlueGods){
+            for (checkerViewModel checker: blueCheckersViewModel){
                 if(checker.getCurrentHitbox() == playerBlue.getMovePieceTo()){
                     return checker.getCheckerId();
                 }
@@ -431,105 +459,72 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         return null;
     }
 
-    private float getCentrumReloadX(){
-        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
-            Log.d("center", "getCentrumXOfHitbox: " + placeInBoard);
-            float x = width - validPlaces.get(placeInBoard-1).left;
-            float z = width - validPlaces.get(placeInBoard-1).right;
-            return (width - (z + ((x-z)/2)) - redChecker1.getWidth()/2);
-        }
-        else{
-            Log.d("tah", "getCentrumXOfHitbox  LANDSCAPE: " + placeInBoard);
-            float x = gameView.getX() + validPlaces.get(placeInBoard-1).left;
-            float z = gameView.getX() + validPlaces.get(placeInBoard-1).right;
-            Log.d("cancer", "getCentrumReloadX: bajsikörb " + getResources().getDimension(R.dimen.checker_size));
-            return ((z + ((x-z)/2)) - getResources().getDimension(R.dimen.checker_size)/2);
-        }
-    }
-
+    /**
+     * Calculates the centrum of a hitbox.
+     * @return center x-value of a hitbox
+     */
     public float getCentrumXOfHitbox(){
         if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
-            float x = width - validPlaces.get(placeInBoard-1).left;
-            float z = width - validPlaces.get(placeInBoard-1).right;
-            Log.d("cancer", "PORTRAIT: getCentrumHitbox X: " + redChecker1.getHeight());
-            return (width - (z + ((x-z)/2)) - redChecker1.getHeight()/2);
+            return (validPlaces.get(placeInBoard-1).centerX() - getResources().getDimension(R.dimen.checker_size)/2);
         }
         else{
-            float x = gameView.getX() + validPlaces.get(placeInBoard-1).left;
-            float z = gameView.getX() + validPlaces.get(placeInBoard-1).right;
-            Log.d("cancer", "LANDSCAPE: getCentrumHitbox X: HEEEEEEEEEEEEGHTI " + getResources().getDimension(R.dimen.checker_size));
-            Log.d("cancer", "getCentrumReloadX: bajsikörb " + getResources().getDimension(R.dimen.checker_size)/2);
-            return ((z + ((x-z)/2)) - getResources().getDimension(R.dimen.checker_size)/2);
+            return (getResources().getDimension(R.dimen.left_boarder) + (validPlaces.get(placeInBoard-1).centerX() - getResources().getDimension(R.dimen.checker_size)/2));
         }
     }
 
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
-        Log.d("TAG", "onWindowFocusChanged: " + redChecker1.getWidth() + " " + redChecker1.getMeasuredHeight());
-        imageScale = redChecker1.getHeight();
-
-    }
-
+    /**
+     * Calculates the centrum of a hitbox.
+     * @return center y-value of a hitbox
+     */
     private float getCentrumYOfHitbox(){
         if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-            float x = height - validPlaces.get(placeInBoard - 1).bottom;
-            float z = height - validPlaces.get(placeInBoard - 1).top;
-            return (height - (z + ((x - z) / 2)) - redChecker1.getHeight() / 2);
+            return (validPlaces.get(placeInBoard-1).centerY() - getResources().getDimension(R.dimen.checker_size)/2);
         }else{
-
-            float x = height - validPlaces.get(placeInBoard - 1).bottom;
-            float z = height - validPlaces.get(placeInBoard - 1).top;
-
-
-            Log.d("cancer", "getCentrumYOfHitbox: LANDSCAPE: CENTER Y: " +(height - (z + ((x - z) / 2)) - redChecker1.getHeight() / 2));
-            return (height - (z + ((x - z) / 2)) - redChecker1.getHeight() / 2);
+            return (validPlaces.get(placeInBoard-1).centerY() - getResources().getDimension(R.dimen.checker_size)/2);
         }
     }
 
+    /**
+     * Helper method to place checker at the appropriate coordinate when re-entering the app.
+     */
     private void replaceCheckers(){
-        Log.d("cancer", "replaceCheckers: REEEEEEEEEEEEEEEEEEEEEEEEEELOADING ");
-
         for (int i= 0; i < playerBlue.getMoves().size(); i++){
-            BlueGods.get(i).setCurrentHitbox(playerBlue.getMoves().get(i));
-            placeInBoard = BlueGods.get(i).getCurrentHitbox();
+            blueCheckersViewModel.get(i).setCurrentHitbox(playerBlue.getMoves().get(i));
+            placeInBoard = blueCheckersViewModel.get(i).getCurrentHitbox();
             if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
                 AnimatorSet animationSet = new AnimatorSet();
-                animationSet.play(ObjectAnimator.ofFloat(BlueGods.get(i).getCheckerId(), "x", (float) (getCentrumXOfHitbox() - getResources().getDimension(R.dimen.checker_size)/2)))
-                        .with(ObjectAnimator.ofFloat(BlueGods.get(i).getCheckerId(), "y", (float) (getCentrumYOfHitbox() - getResources().getDimension(R.dimen.checker_size)/2)));
+                animationSet.play(ObjectAnimator.ofFloat(blueCheckersViewModel.get(i).getCheckerId(), "x", (float) (getCentrumXOfHitbox() )))
+                        .with(ObjectAnimator.ofFloat(blueCheckersViewModel.get(i).getCheckerId(), "y", (float) (getCentrumYOfHitbox() )));
                 animationSet.setDuration(2000);
                 animationSet.start();
             }else{
                 AnimatorSet animationSet = new AnimatorSet();
-                animationSet.play(ObjectAnimator.ofFloat(BlueGods.get(i).getCheckerId(), "x", (getCentrumXOfHitbox() + getResources().getDimension(R.dimen.left_boarder))))
-                        .with(ObjectAnimator.ofFloat(BlueGods.get(i).getCheckerId(), "y", (getCentrumYOfHitbox() - (getResources().getDimension(R.dimen.checker_size)/2)) ));
+                animationSet.play(ObjectAnimator.ofFloat(blueCheckersViewModel.get(i).getCheckerId(), "x", (getCentrumXOfHitbox() )))
+                        .with(ObjectAnimator.ofFloat(blueCheckersViewModel.get(i).getCheckerId(), "y", (getCentrumYOfHitbox() )) );
                 animationSet.setDuration(2000);
                 animationSet.start();
             }
 
         }
         for (int i= 0; i < playerRed.getMoves().size(); i++){
-            RedGods.get(i).setCurrentHitbox(playerRed.getMoves().get(i));
-            Log.d("cancer", "replaceCheckers:  redGods hitbox: " + RedGods.get(i).getCurrentHitbox());
-            placeInBoard = RedGods.get(i).getCurrentHitbox();
-            Log.d("cancer", "replaceCheckers:  palceinteboard hitbox: " + placeInBoard);
+            redCheckersViewModel.get(i).setCurrentHitbox(playerRed.getMoves().get(i));
+            placeInBoard = redCheckersViewModel.get(i).getCurrentHitbox();
             if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
                 AnimatorSet animationSet = new AnimatorSet();
-                animationSet.play(ObjectAnimator.ofFloat(RedGods.get(i).getCheckerId(), "x", (getCentrumXOfHitbox()  - getResources().getDimension(R.dimen.checker_size)/2)))
-                        .with(ObjectAnimator.ofFloat(RedGods.get(i).getCheckerId(), "y", (getCentrumYOfHitbox()  - getResources().getDimension(R.dimen.checker_size)/2)));
+                animationSet.play(ObjectAnimator.ofFloat(redCheckersViewModel.get(i).getCheckerId(), "x", getCentrumXOfHitbox()))
+                        .with(ObjectAnimator.ofFloat(redCheckersViewModel.get(i).getCheckerId(), "y", getCentrumYOfHitbox()));
                 animationSet.setDuration(2000);
                 animationSet.start();
             }else{
                 AnimatorSet animationSet = new AnimatorSet();
-                animationSet.play(ObjectAnimator.ofFloat(RedGods.get(i).getCheckerId(), "x", getCentrumXOfHitbox() + getResources().getDimension(R.dimen.left_boarder)))
-                        .with(ObjectAnimator.ofFloat(RedGods.get(i).getCheckerId(), "y", getCentrumYOfHitbox()- getResources().getDimension(R.dimen.checker_size)/2));
+                animationSet.play(ObjectAnimator.ofFloat(redCheckersViewModel.get(i).getCheckerId(), "x", getCentrumXOfHitbox()))
+                        .with(ObjectAnimator.ofFloat(redCheckersViewModel.get(i).getCheckerId(), "y", getCentrumYOfHitbox()));
                 animationSet.setDuration(2000);
                 animationSet.start();
             }
         }
         gameView.invalidate();
     }
-
 
     @Override
     protected void onStop() {
@@ -543,21 +538,32 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
                         playerBlue.getMoves(),
                         playerRed.getMoves(),
                         playerBlue.getNrOfMarkersPlaced(),
-                        playerRed.getNrOfMarkersPlaced());
-                Log.d("TAG", "run: SAVED");
+                        playerRed.getNrOfMarkersPlaced(),
+                        rules.getTurn(),
+                        rules.getState(),
+                        playerBlue.getNrOfRemovedCheckers(),
+                        playerRed.getNrOfRemovedCheckers());
             }
         }).start();
-
     }
 
-
+    /**
+     * Helper method to check if a player has won
+     * @param color the playercolor
+     * @return true if color has won, false if not
+     */
     private boolean checkWin(Player color){
         if(((color.getMoves().size() < 3) && (color.getNrOfMarkersPlaced() == 9))){
+            internalFile.clearData();
             return true;
         }
         else return false;
     }
 
+    /**
+     * Helper method to check if a press on screen is in a valid location
+     * @return true if valid, false if invalid
+     */
     private boolean checkValid(){
         boolean validity = false;
         for(int i = 0; i < validPlaces.size(); i++){
@@ -575,6 +581,9 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         return validity;
     }
 
+    /**
+     * Initiates all the hitboxes for the gameboard in portrait mode
+     */
     private void initHitboxesPortrait(){
 
         //1
@@ -770,6 +779,10 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validPlaces.add(validplace);
 
     }
+
+    /**
+     * Initiates all the hitboxes for the gameboard in landscape mode
+     */
     private void initHitboxesLandscape(){
 
         //1

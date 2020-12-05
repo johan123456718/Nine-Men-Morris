@@ -12,6 +12,7 @@ public class Player implements Serializable {
     private int movePieceTo;
     private int movePieceFrom;
     private int nrOfMarkers;
+    private int nrOfRemovedCheckers;
 
     public Player(int colorID){
         this.colorID = colorID;
@@ -20,6 +21,7 @@ public class Player implements Serializable {
         this.movePieceTo = 0;
         this.movePieceFrom = 0;
         this.nrOfMarkers = 9;
+        this.nrOfRemovedCheckers = 0;
     }
 
     public int getNrOfMarkersPlaced() {
@@ -65,5 +67,13 @@ public class Player implements Serializable {
 
     public void setNrOfMarkers(int nrOfMarkers) {
         this.nrOfMarkers = nrOfMarkers;
+    }
+
+    public int getNrOfRemovedCheckers() {
+        return nrOfRemovedCheckers;
+    }
+
+    public void setNrOfRemovedCheckers(int nrOfRemovedCheckers) {
+        this.nrOfRemovedCheckers = nrOfRemovedCheckers;
     }
 }
