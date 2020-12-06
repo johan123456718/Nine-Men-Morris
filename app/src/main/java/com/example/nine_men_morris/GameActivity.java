@@ -80,60 +80,6 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         boardView = findViewById(R.id.drawView);
     }
 
-    /**
-     * Helper method to initiate all the ImageViews for the checkers.
-     */
-    private void initCheckers(){
-
-        redCheckersViewModel = new ArrayList<>();
-        blueCheckersViewModel = new ArrayList<>();
-
-        blueChecker1 = (ImageView) findViewById(R.id.blueCheck1);
-        redChecker1 = (ImageView) findViewById(R.id.redCheck1);
-        redCheckersViewModel.add(new checkerViewModel(redChecker1));
-        blueCheckersViewModel.add(new checkerViewModel(blueChecker1));
-
-        blueChecker2 = findViewById(R.id.blueCheck2);
-        redChecker2 = findViewById(R.id.redCheck2);
-        redCheckersViewModel.add(new checkerViewModel(redChecker2));
-        blueCheckersViewModel.add(new checkerViewModel(blueChecker2));
-
-        blueChecker3 = findViewById(R.id.blueCheck3);
-        redChecker3 = findViewById(R.id.redCheck3);
-        redCheckersViewModel.add(new checkerViewModel(redChecker3));
-        blueCheckersViewModel.add(new checkerViewModel(blueChecker3));
-
-        blueChecker4 = findViewById(R.id.blueCheck4);
-        redChecker4 = findViewById(R.id.redCheck4);
-        redCheckersViewModel.add(new checkerViewModel(redChecker4));
-        blueCheckersViewModel.add(new checkerViewModel(blueChecker4));
-
-        blueChecker5 = findViewById(R.id.blueCheck5);
-        redChecker5 = findViewById(R.id.redCheck5);
-        redCheckersViewModel.add(new checkerViewModel(redChecker5));
-        blueCheckersViewModel.add(new checkerViewModel(blueChecker5));
-
-        blueChecker6 = findViewById(R.id.blueCheck6);
-        redChecker6 = findViewById(R.id.redCheck6);
-        redCheckersViewModel.add(new checkerViewModel(redChecker6));
-        blueCheckersViewModel.add(new checkerViewModel(blueChecker6));
-
-        blueChecker7 = findViewById(R.id.blueCheck7);
-        redChecker7 = findViewById(R.id.redCheck7);
-        redCheckersViewModel.add(new checkerViewModel(redChecker7));
-        blueCheckersViewModel.add(new checkerViewModel(blueChecker7));
-
-        blueChecker8 = findViewById(R.id.blueCheck8);
-        redChecker8 = findViewById(R.id.redCheck8);
-        redCheckersViewModel.add(new checkerViewModel(redChecker8));
-        blueCheckersViewModel.add(new checkerViewModel(blueChecker8));
-
-        blueChecker9 = findViewById(R.id.blueCheck9);
-        redChecker9 = findViewById(R.id.redCheck9);
-        redCheckersViewModel.add(new checkerViewModel(redChecker9));
-        blueCheckersViewModel.add(new checkerViewModel(blueChecker9));
-    }
-
     @Override
     protected void onStart(){
         super.onStart();
@@ -148,20 +94,25 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         printPlayerTurn();
     }
 
-    /**
-     * Helper method to make removed checkers not show up on screen.
-     */
-    private void setCheckerStates() {
-        if(playerRed.getNrOfRemovedCheckers() > 0){
-           for (int i = 1; i < playerRed.getNrOfRemovedCheckers() +1  ; i++ ){
-               redCheckersViewModel.get(playerRed.getNrOfMarkersPlaced()-i).getCheckerId().setVisibility(View.INVISIBLE);
-           }
-        }
-        if (playerBlue.getNrOfRemovedCheckers() > 0){
-            for (int i = 1; i < playerBlue.getNrOfRemovedCheckers() + 1 ; i++ ){
-                blueCheckersViewModel.get(playerBlue.getNrOfMarkersPlaced()-i).getCheckerId().setVisibility(View.INVISIBLE);
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        new Thread(new Runnable(){
+            @Override
+            public void run() {
+                dir = getFilesDir();
+                internalFile.saveData(dir,
+                        playerBlue.getMoves(),
+                        playerRed.getMoves(),
+                        playerBlue.getNrOfMarkersPlaced(),
+                        playerRed.getNrOfMarkersPlaced(),
+                        rules.getTurn(),
+                        rules.getState(),
+                        playerBlue.getNrOfRemovedCheckers(),
+                        playerRed.getNrOfRemovedCheckers());
             }
-        }
+        }).start();
     }
 
     @Override
@@ -385,6 +336,77 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         }
     }
 
+
+    /**
+     * Helper method to initiate all the ImageViews for the checkers.
+     */
+    private void initCheckers(){
+
+        redCheckersViewModel = new ArrayList<>();
+        blueCheckersViewModel = new ArrayList<>();
+
+        blueChecker1 = (ImageView) findViewById(R.id.blueCheck1);
+        redChecker1 = (ImageView) findViewById(R.id.redCheck1);
+        redCheckersViewModel.add(new checkerViewModel(redChecker1));
+        blueCheckersViewModel.add(new checkerViewModel(blueChecker1));
+
+        blueChecker2 = findViewById(R.id.blueCheck2);
+        redChecker2 = findViewById(R.id.redCheck2);
+        redCheckersViewModel.add(new checkerViewModel(redChecker2));
+        blueCheckersViewModel.add(new checkerViewModel(blueChecker2));
+
+        blueChecker3 = findViewById(R.id.blueCheck3);
+        redChecker3 = findViewById(R.id.redCheck3);
+        redCheckersViewModel.add(new checkerViewModel(redChecker3));
+        blueCheckersViewModel.add(new checkerViewModel(blueChecker3));
+
+        blueChecker4 = findViewById(R.id.blueCheck4);
+        redChecker4 = findViewById(R.id.redCheck4);
+        redCheckersViewModel.add(new checkerViewModel(redChecker4));
+        blueCheckersViewModel.add(new checkerViewModel(blueChecker4));
+
+        blueChecker5 = findViewById(R.id.blueCheck5);
+        redChecker5 = findViewById(R.id.redCheck5);
+        redCheckersViewModel.add(new checkerViewModel(redChecker5));
+        blueCheckersViewModel.add(new checkerViewModel(blueChecker5));
+
+        blueChecker6 = findViewById(R.id.blueCheck6);
+        redChecker6 = findViewById(R.id.redCheck6);
+        redCheckersViewModel.add(new checkerViewModel(redChecker6));
+        blueCheckersViewModel.add(new checkerViewModel(blueChecker6));
+
+        blueChecker7 = findViewById(R.id.blueCheck7);
+        redChecker7 = findViewById(R.id.redCheck7);
+        redCheckersViewModel.add(new checkerViewModel(redChecker7));
+        blueCheckersViewModel.add(new checkerViewModel(blueChecker7));
+
+        blueChecker8 = findViewById(R.id.blueCheck8);
+        redChecker8 = findViewById(R.id.redCheck8);
+        redCheckersViewModel.add(new checkerViewModel(redChecker8));
+        blueCheckersViewModel.add(new checkerViewModel(blueChecker8));
+
+        blueChecker9 = findViewById(R.id.blueCheck9);
+        redChecker9 = findViewById(R.id.redCheck9);
+        redCheckersViewModel.add(new checkerViewModel(redChecker9));
+        blueCheckersViewModel.add(new checkerViewModel(blueChecker9));
+    }
+
+    /**
+     * Helper method to make removed checkers not show up on screen.
+     */
+    private void setCheckerStates() {
+        if(playerRed.getNrOfRemovedCheckers() > 0){
+            for (int i = 1; i < playerRed.getNrOfRemovedCheckers() +1  ; i++ ){
+                redCheckersViewModel.get(playerRed.getNrOfMarkersPlaced()-i).getCheckerId().setVisibility(View.INVISIBLE);
+            }
+        }
+        if (playerBlue.getNrOfRemovedCheckers() > 0){
+            for (int i = 1; i < playerBlue.getNrOfRemovedCheckers() + 1 ; i++ ){
+                blueCheckersViewModel.get(playerBlue.getNrOfMarkersPlaced()-i).getCheckerId().setVisibility(View.INVISIBLE);
+            }
+        }
+    }
+
     /**
      * Helper method to get the current checker before 9 are placed
      * @return the current checker to be placed
@@ -407,9 +429,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
     private ImageView getSelectedChecker(){
         if (rules.getTurn() == 1){//Red
             for (checkerViewModel checker: redCheckersViewModel){
-                //Log.d("TAG", "getSelectedChecker: " + checker.getCurrentHitbox() + " curfrom: " + playerRed.getMovePieceFrom());
                 if(checker.getCurrentHitbox() == playerRed.getMovePieceTo()){
-                  //  Log.d("TAG", "getSelectedChecker: " + checker.getCurrentHitbox() + " from: " + playerRed.getMovePieceFrom() + " ID: " + checker.getCheckerId());
                     return checker.getCheckerId();
                 }
             }
@@ -490,27 +510,6 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         boardView.invalidate();
     }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-
-        new Thread(new Runnable(){
-            @Override
-            public void run() {
-                dir = getFilesDir();
-                internalFile.saveData(dir,
-                        playerBlue.getMoves(),
-                        playerRed.getMoves(),
-                        playerBlue.getNrOfMarkersPlaced(),
-                        playerRed.getNrOfMarkersPlaced(),
-                        rules.getTurn(),
-                        rules.getState(),
-                        playerBlue.getNrOfRemovedCheckers(),
-                        playerRed.getNrOfRemovedCheckers());
-            }
-        }).start();
-    }
-
     /**
      * Helper method to check if a player has won
      * @param color the playercolor
@@ -584,7 +583,6 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.right = validplace.left + 100;
         validplace.bottom = validplace.top + 100;
         validPlacesInGameboard.add(validplace);
-        Log.d("center", "initHitboxesPortrait: X: " + validplace.centerX() + " Y: " + validplace.centerY());
         //4
         validplace = new Rect();
         validplace.left = width/2 -50;
@@ -784,7 +782,6 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.top = 25;
         validplace.bottom = validplace.top + 100;
         validPlacesInGameboard.add(validplace);
-        Log.d("cancer", "initHitboxesLANDSCAPE: X: " + validplace.centerX() + " Y: " + validplace.centerY());
 
         //4
         validplace = new Rect();
