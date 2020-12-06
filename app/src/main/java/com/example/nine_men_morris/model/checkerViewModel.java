@@ -1,15 +1,10 @@
 package com.example.nine_men_morris.model;
 
-
-import android.graphics.Rect;
-import android.os.Build;
-import android.os.Parcel;
-import android.os.Parcelable;
-import android.util.Log;
 import android.widget.ImageView;
 
-import androidx.annotation.RequiresApi;
-
+/**
+ * Viewmodel to map an ImageView to a specific hitbox.
+ */
 public class checkerViewModel{
 
     private ImageView checkerId;

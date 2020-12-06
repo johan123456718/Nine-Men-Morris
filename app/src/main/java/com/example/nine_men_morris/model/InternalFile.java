@@ -8,10 +8,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.security.spec.ECField;
 import java.util.ArrayList;
-import java.util.List;
 
+/**
+ * Class to save and load gamedata
+ */
 public class InternalFile {
     private static InternalFile internalFile;
 
@@ -28,6 +29,18 @@ public class InternalFile {
 
     private static final String NAME_OF_FILE = "morrisFile";
 
+    /**
+     * Save necessary data to local file
+     * @param dir local file directory
+     * @param playerBlueMoves
+     * @param playerRedMoves
+     * @param nrOfBlueMarkersPlaced
+     * @param nrOfRedMarkersPlaced
+     * @param turn
+     * @param state
+     * @param nrOfRemovedBlueCheckers
+     * @param nrOfRemovedRedCheckers
+     */
     public void saveData(File dir,
                          ArrayList<Integer> playerBlueMoves,
                          ArrayList<Integer> playerRedMoves,
@@ -57,6 +70,13 @@ public class InternalFile {
         }
     }
 
+    /**
+     * Loads all necessary data from file
+     * @param dir local file directory
+     * @param playerBlue
+     * @param playerRed
+     * @param rules current game
+     */
     public void loadData(File dir, Player playerBlue, Player playerRed, NineMenMorrisRules rules){
         try {
             FileInputStream fileInputStream = new FileInputStream(new File(dir, NAME_OF_FILE));
@@ -76,6 +96,9 @@ public class InternalFile {
         }
     }
 
+    /**
+     * Clears the local file to begin a new game
+     */
     public void clearData(){
         try {
             new FileOutputStream(new File("/data/user/0/com.example.nine_men_morris/files", NAME_OF_FILE)).close();

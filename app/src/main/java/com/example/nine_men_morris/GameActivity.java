@@ -1,6 +1,5 @@
 package com.example.nine_men_morris;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -30,7 +29,7 @@ import java.util.ArrayList;
  */
 public class GameActivity extends AppCompatActivity implements View.OnTouchListener{
 
-    private GameView gameView;
+    private BoardView boardView;
     private ImageView blueChecker1, redChecker1,
                         blueChecker2, redChecker2,
                         blueChecker3, redChecker3,
@@ -40,15 +39,12 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
                         blueChecker7, redChecker7,
                         blueChecker8, redChecker8,
                         blueChecker9, redChecker9;
-
     private TextView playerTurnText;
     private TextView playerRemoveText;
-
-    private ArrayList<ImageView> redCheckers, blueCheckers;
     private NineMenMorrisRules rules;
-    private ArrayList<Rect> validPlaces;
+    private ArrayList<Rect> validPlacesInGameboard;
     private Player playerRed, playerBlue;
-    private int height, width, placeInBoard, imageScale, nrOfRemovedRedCheckers, nrOfRemovedBlueCheckers;
+    private int height, width, placeClickedInBoard;
     private float touchedX, touchedY;
     private ArrayList<checkerViewModel> redCheckersViewModel, blueCheckersViewModel;
     private InternalFile internalFile;
@@ -66,17 +62,13 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         height = displayMetrics.heightPixels;
         width = displayMetrics.widthPixels;
 
-
         internalFile = InternalFile.getInstance();
-
         initCheckers();
 
         rules = new NineMenMorrisRules();
-        validPlaces = new ArrayList<>();
+        validPlacesInGameboard = new ArrayList<>();
         playerRed = new Player(2); //RED
         playerBlue = new Player(1); //Blue
-        nrOfRemovedRedCheckers = 0;
-        nrOfRemovedBlueCheckers = 0;
         playerTurnText = findViewById(R.id.playerTurn);
         playerRemoveText = findViewById(R.id.playerRemove);
 
@@ -85,83 +77,61 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         }else {
             initHitboxesLandscape();
         }
-
-        gameView = findViewById(R.id.drawView);
+        boardView = findViewById(R.id.drawView);
     }
 
     /**
      * Helper method to initiate all the ImageViews for the checkers.
      */
     private void initCheckers(){
-        blueCheckers = new ArrayList<>();
-        redCheckers = new ArrayList<>();
+
         redCheckersViewModel = new ArrayList<>();
         blueCheckersViewModel = new ArrayList<>();
 
         blueChecker1 = (ImageView) findViewById(R.id.blueCheck1);
         redChecker1 = (ImageView) findViewById(R.id.redCheck1);
-        blueCheckers.add(blueChecker1);
-        redCheckers.add(redChecker1);
         redCheckersViewModel.add(new checkerViewModel(redChecker1));
         blueCheckersViewModel.add(new checkerViewModel(blueChecker1));
-        imageScale = redChecker1.getMeasuredHeight();
 
         blueChecker2 = findViewById(R.id.blueCheck2);
         redChecker2 = findViewById(R.id.redCheck2);
-        blueCheckers.add(blueChecker2);
-        redCheckers.add(redChecker2);
         redCheckersViewModel.add(new checkerViewModel(redChecker2));
         blueCheckersViewModel.add(new checkerViewModel(blueChecker2));
 
         blueChecker3 = findViewById(R.id.blueCheck3);
         redChecker3 = findViewById(R.id.redCheck3);
-        blueCheckers.add(blueChecker3);
-        redCheckers.add(redChecker3);
         redCheckersViewModel.add(new checkerViewModel(redChecker3));
         blueCheckersViewModel.add(new checkerViewModel(blueChecker3));
 
         blueChecker4 = findViewById(R.id.blueCheck4);
         redChecker4 = findViewById(R.id.redCheck4);
-        blueCheckers.add(blueChecker4);
-        redCheckers.add(redChecker4);
         redCheckersViewModel.add(new checkerViewModel(redChecker4));
         blueCheckersViewModel.add(new checkerViewModel(blueChecker4));
 
         blueChecker5 = findViewById(R.id.blueCheck5);
         redChecker5 = findViewById(R.id.redCheck5);
-        blueCheckers.add(blueChecker5);
-        redCheckers.add(redChecker5);
         redCheckersViewModel.add(new checkerViewModel(redChecker5));
         blueCheckersViewModel.add(new checkerViewModel(blueChecker5));
 
         blueChecker6 = findViewById(R.id.blueCheck6);
         redChecker6 = findViewById(R.id.redCheck6);
-        blueCheckers.add(blueChecker6);
-        redCheckers.add(redChecker6);
         redCheckersViewModel.add(new checkerViewModel(redChecker6));
         blueCheckersViewModel.add(new checkerViewModel(blueChecker6));
 
         blueChecker7 = findViewById(R.id.blueCheck7);
         redChecker7 = findViewById(R.id.redCheck7);
-        blueCheckers.add(blueChecker7);
-        redCheckers.add(redChecker7);
         redCheckersViewModel.add(new checkerViewModel(redChecker7));
         blueCheckersViewModel.add(new checkerViewModel(blueChecker7));
 
         blueChecker8 = findViewById(R.id.blueCheck8);
         redChecker8 = findViewById(R.id.redCheck8);
-        blueCheckers.add(blueChecker8);
-        redCheckers.add(redChecker8);
         redCheckersViewModel.add(new checkerViewModel(redChecker8));
         blueCheckersViewModel.add(new checkerViewModel(blueChecker8));
 
         blueChecker9 = findViewById(R.id.blueCheck9);
         redChecker9 = findViewById(R.id.redCheck9);
-        blueCheckers.add(blueChecker9);
-        redCheckers.add(redChecker9);
         redCheckersViewModel.add(new checkerViewModel(redChecker9));
         blueCheckersViewModel.add(new checkerViewModel(blueChecker9));
-
     }
 
     @Override
@@ -170,7 +140,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         dir = getFilesDir();
         internalFile.loadData(dir, playerBlue, playerRed, rules);
 
-        gameView.setOnTouchListener(this);
+        boardView.setOnTouchListener(this);
         //if om värden != null
         rules.initAfterReload(playerRed, playerBlue);
         setCheckerStates();
@@ -203,14 +173,13 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
             case MotionEvent.ACTION_DOWN:
                 return true;
             case MotionEvent.ACTION_UP:
-
                 if (rules.getState() != 1){ // Blå för placer en checker innan 9
                     if ((playerRed.getNrOfMarkersPlaced() < 9)
                             || (playerBlue.getNrOfMarkersPlaced() < 9)) {
                         if (rules.getTurn() == playerBlue.getColorID()) {
-                            if (checkValid() && rules.legalMove(placeInBoard, playerBlue.getMovePieceTo(), playerBlue.getColorID())) {
-                                playerBlue.getMoves().add(placeInBoard);
-                                blueCheckersViewModel.get(playerBlue.getNrOfMarkersPlaced()).setCurrentHitbox(placeInBoard);
+                            if (checkValid() && rules.legalMove(placeClickedInBoard, playerBlue.getMovePieceTo(), playerBlue.getColorID())) {
+                                playerBlue.getMoves().add(placeClickedInBoard);
+                                blueCheckersViewModel.get(playerBlue.getNrOfMarkersPlaced()).setCurrentHitbox(placeClickedInBoard);
                                 playerBlue.setNrOfMarkersPlaced(playerBlue.getNrOfMarkersPlaced() + 1);
                                 playerBlue.setNrOfMarkers(playerBlue.getNrOfMarkers() - 1);
 
@@ -222,16 +191,16 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
 
                                 v.invalidate();
 
-                                if(rules.remove(placeInBoard)){
+                                if(rules.remove(placeClickedInBoard)){
                                     rules.setState(1);
                                     rules.setTurn(playerBlue.getColorID());
                                     playerRemoveText.setText("Blue can remove");
                                 }
                             }
                         } else { // röd för palcera en checker innan 9
-                            if (checkValid() && rules.legalMove(placeInBoard, playerRed.getMovePieceTo(), playerRed.getColorID())) {
-                                playerRed.getMoves().add(placeInBoard);
-                                redCheckersViewModel.get(playerRed.getNrOfMarkersPlaced()).setCurrentHitbox(placeInBoard);
+                            if (checkValid() && rules.legalMove(placeClickedInBoard, playerRed.getMovePieceTo(), playerRed.getColorID())) {
+                                playerRed.getMoves().add(placeClickedInBoard);
+                                redCheckersViewModel.get(playerRed.getNrOfMarkersPlaced()).setCurrentHitbox(placeClickedInBoard);
                                 playerRed.setNrOfMarkersPlaced(playerRed.getNrOfMarkersPlaced() + 1);
                                 playerRed.setNrOfMarkers(playerRed.getNrOfMarkers() - 1);
 
@@ -242,7 +211,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
                                 animationSet.start();
 
                                 v.invalidate();
-                                if(rules.remove(placeInBoard)){
+                                if(rules.remove(placeClickedInBoard)){
                                     rules.setState(1);
                                     rules.setTurn(playerRed.getColorID());
                                     playerRemoveText.setText("Red can remove");
@@ -252,24 +221,22 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
                     } else { // blå får flytta en av sina checkers
                         if (rules.getTurn() == playerBlue.getColorID()) {
                             if (playerBlue.getMovePieceTo() != 0) {
-                                if (checkValid() && rules.legalMove(placeInBoard, playerBlue.getMovePieceTo(), playerBlue.getColorID())) {
-                                   // imageID = v.getId();
-                                  //  Toast.makeText(this, "Image clicked: " + imageID, Toast.LENGTH_LONG).show();
+                                if (checkValid() && rules.legalMove(placeClickedInBoard, playerBlue.getMovePieceTo(), playerBlue.getColorID())) {
                                     for (int i = 0; i < playerBlue.getMoves().size(); i++) {
 
                                         int tmp = playerBlue.getMoves().get(i);
                                         if (playerBlue.getMovePieceFrom() == tmp) {
                                             for (checkerViewModel e: blueCheckersViewModel){
                                                 if (e.getCurrentHitbox() == playerBlue.getMovePieceFrom()){
-                                                    e.setCurrentHitbox(placeInBoard);
-                                                    playerBlue.setMovePieceTo(placeInBoard);
+                                                    e.setCurrentHitbox(placeClickedInBoard);
+                                                    playerBlue.setMovePieceTo(placeClickedInBoard);
                                                 }
                                             }
                                             playerBlue.getMoves().remove(i);
                                             rules.remove(playerBlue.getMovePieceFrom(), 4);
                                         }
                                     }
-                                    playerBlue.getMoves().add(placeInBoard);
+                                    playerBlue.getMoves().add(placeClickedInBoard);
 
                                     AnimatorSet animationSet = new AnimatorSet();
                                     animationSet.play(ObjectAnimator.ofFloat(getSelectedChecker(), "x", getCentrumXOfHitbox()))
@@ -282,7 +249,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
 
                                     v.invalidate();
 
-                                    if(rules.remove(placeInBoard)){
+                                    if(rules.remove(placeClickedInBoard)){
                                         rules.setState(1);
                                         rules.setTurn(playerBlue.getColorID());
                                         playerRemoveText.setText("Blue can remove");
@@ -294,31 +261,28 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
                                 }
                             } else {
 
-                                if (checkValid() && (rules.board(placeInBoard) == 4)) {
-                                    playerBlue.setMovePieceTo(placeInBoard);
-                                    playerBlue.setMovePieceFrom(placeInBoard);
+                                if (checkValid() && (rules.board(placeClickedInBoard) == 4)) {
+                                    playerBlue.setMovePieceTo(placeClickedInBoard);
+                                    playerBlue.setMovePieceFrom(placeClickedInBoard);
                                 }
                             }
                         } else { //Röd får flytta en chercker
                             if (playerRed.getMovePieceTo() != 0) {
-                                if (checkValid() && rules.legalMove(placeInBoard, playerRed.getMovePieceTo(), playerRed.getColorID())) {
-                                   //imageID = v.getId();
-                                    //Toast.makeText(this, "Image clicked: " + imageID, Toast.LENGTH_LONG).show();
+                                if (checkValid() && rules.legalMove(placeClickedInBoard, playerRed.getMovePieceTo(), playerRed.getColorID())) {
                                     for (int i = 0; i < playerRed.getMoves().size(); i++) {
                                         int tmp = playerRed.getMoves().get(i);
                                         if (playerRed.getMovePieceFrom() == tmp) {
                                             for (checkerViewModel e: redCheckersViewModel){
                                                 if (e.getCurrentHitbox() == playerRed.getMovePieceFrom()){
-                                                    e.setCurrentHitbox(placeInBoard);
-                                                    playerRed.setMovePieceTo(placeInBoard);
+                                                    e.setCurrentHitbox(placeClickedInBoard);
+                                                    playerRed.setMovePieceTo(placeClickedInBoard);
                                                 }
                                             }
                                             playerRed.getMoves().remove(i);
                                             rules.remove(playerRed.getMovePieceFrom(), 5);
                                         }
                                     }
-                                    playerRed.getMoves().add(placeInBoard);
-
+                                    playerRed.getMoves().add(placeClickedInBoard);
 
                                     AnimatorSet animationSet = new AnimatorSet();
                                     animationSet.play(ObjectAnimator.ofFloat(getSelectedChecker(), "x", getCentrumXOfHitbox()))
@@ -328,35 +292,30 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
 
                                     playerRed.setMovePieceTo(0);
                                     playerRed.setMovePieceFrom(0);
-
                                     v.invalidate();
-
-                                    if(rules.remove(placeInBoard)){
+                                    if(rules.remove(placeClickedInBoard)){
                                         rules.setState(1);
                                         rules.setTurn(playerRed.getColorID());
                                         playerRemoveText.setText("Red can remove");
                                     }
                                 } else {
-
                                     playerRed.setMovePieceTo(0);
                                     playerRed.setMovePieceFrom(0);
                                 }
-                            } else if (checkValid() && (rules.board(placeInBoard) == 5)) {
-
-                                playerRed.setMovePieceTo(placeInBoard);
-                                playerRed.setMovePieceFrom(placeInBoard);
+                            } else if (checkValid() && (rules.board(placeClickedInBoard) == 5)) {
+                                playerRed.setMovePieceTo(placeClickedInBoard);
+                                playerRed.setMovePieceFrom(placeClickedInBoard);
                             }
                         }
                     }
                 }
 
                 else if(rules.getState() == 1){ // Blå får ta bort en av röds checkers
-                    if(rules.remove(placeInBoard) && (rules.getTurn() == playerBlue.getColorID())){
-                        if(checkValid() && (rules.board(placeInBoard) == 5)){
-
+                    if(rules.remove(placeClickedInBoard) && (rules.getTurn() == playerBlue.getColorID())){
+                        if(checkValid() && (rules.board(placeClickedInBoard) == 5)){
                             for(int i = 0; i < playerRed.getMoves().size(); i++) {
                                 int tmp = playerRed.getMoves().get(i);
-                                if(tmp == placeInBoard) {
+                                if(tmp == placeClickedInBoard) {
                                     rules.setTurn(playerRed.getColorID());
                                     for (checkerViewModel e: redCheckersViewModel){
                                         if(e.getCurrentHitbox() == tmp){
@@ -367,21 +326,19 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
                                             playerRemoveText.setText("");
                                         }
                                     }
-
-
                                     playerRed.getMoves().remove(i);
-                                    rules.remove(placeInBoard, 5);
+                                    rules.remove(placeClickedInBoard, 5);
                                     rules.setState(0);
                                     v.invalidate();
                                 }
                             }
                         }
-                    } else if(rules.remove(placeInBoard) && (rules.getTurn() == playerRed.getColorID())){//Röd får ta bort en av blås cehckers
-                        if(checkValid() && (rules.board(placeInBoard) == 4)){
+                    } else if(rules.remove(placeClickedInBoard) && (rules.getTurn() == playerRed.getColorID())){//Röd får ta bort en av blås cehckers
+                        if(checkValid() && (rules.board(placeClickedInBoard) == 4)){
 
                             for(int i = 0; i < playerBlue.getMoves().size(); i++) {
                                 int tmp = playerBlue.getMoves().get(i);
-                                if(tmp == placeInBoard) {
+                                if(tmp == placeClickedInBoard) {
                                     for (checkerViewModel e: blueCheckersViewModel){
                                         if(e.getCurrentHitbox() == tmp){
                                             e.setCurrentHitbox(0);
@@ -391,10 +348,9 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
                                             playerRemoveText.setText("");
                                         }
                                     }
-
                                     playerBlue.getMoves().remove(i);
 
-                                    rules.remove(placeInBoard, 4);
+                                    rules.remove(placeClickedInBoard, 4);
                                     rules.setState(0);
                                     rules.setTurn(playerBlue.getColorID());
 
@@ -436,10 +392,10 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
     private ImageView getCurrentChecker()
     {
        if (rules.getTurn() == 1){//Red
-           return redCheckers.get(playerRed.getNrOfMarkersPlaced()-1);
+           return redCheckersViewModel.get(playerRed.getNrOfMarkersPlaced()-1).getCheckerId();
 
        }else if (rules.getTurn() == 2){//blue
-           return blueCheckers.get(playerBlue.getNrOfMarkersPlaced()-1);
+           return blueCheckersViewModel.get(playerBlue.getNrOfMarkersPlaced()-1).getCheckerId();
        }
        return null;
     }
@@ -473,10 +429,10 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
      */
     public float getCentrumXOfHitbox(){
         if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
-            return (validPlaces.get(placeInBoard-1).centerX() - getResources().getDimension(R.dimen.checker_size)/2);
+            return (validPlacesInGameboard.get(placeClickedInBoard -1).centerX() - getResources().getDimension(R.dimen.checker_size)/2);
         }
         else{
-            return (getResources().getDimension(R.dimen.left_boarder) + (validPlaces.get(placeInBoard-1).centerX() - getResources().getDimension(R.dimen.checker_size)/2));
+            return (getResources().getDimension(R.dimen.left_boarder) + (validPlacesInGameboard.get(placeClickedInBoard -1).centerX() - getResources().getDimension(R.dimen.checker_size)/2));
         }
     }
 
@@ -486,9 +442,9 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
      */
     private float getCentrumYOfHitbox(){
         if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-            return (validPlaces.get(placeInBoard-1).centerY() - getResources().getDimension(R.dimen.checker_size)/2);
+            return (validPlacesInGameboard.get(placeClickedInBoard -1).centerY() - getResources().getDimension(R.dimen.checker_size)/2);
         }else{
-            return (validPlaces.get(placeInBoard-1).centerY() - getResources().getDimension(R.dimen.checker_size)/2);
+            return (validPlacesInGameboard.get(placeClickedInBoard -1).centerY() - getResources().getDimension(R.dimen.checker_size)/2);
         }
     }
 
@@ -498,7 +454,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
     private void replaceCheckers(){
         for (int i= 0; i < playerBlue.getMoves().size(); i++){
             blueCheckersViewModel.get(i).setCurrentHitbox(playerBlue.getMoves().get(i));
-            placeInBoard = blueCheckersViewModel.get(i).getCurrentHitbox();
+            placeClickedInBoard = blueCheckersViewModel.get(i).getCurrentHitbox();
             if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
                 AnimatorSet animationSet = new AnimatorSet();
                 animationSet.play(ObjectAnimator.ofFloat(blueCheckersViewModel.get(i).getCheckerId(), "x", (float) (getCentrumXOfHitbox() )))
@@ -516,7 +472,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         }
         for (int i= 0; i < playerRed.getMoves().size(); i++){
             redCheckersViewModel.get(i).setCurrentHitbox(playerRed.getMoves().get(i));
-            placeInBoard = redCheckersViewModel.get(i).getCurrentHitbox();
+            placeClickedInBoard = redCheckersViewModel.get(i).getCurrentHitbox();
             if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
                 AnimatorSet animationSet = new AnimatorSet();
                 animationSet.play(ObjectAnimator.ofFloat(redCheckersViewModel.get(i).getCheckerId(), "x", getCentrumXOfHitbox()))
@@ -531,7 +487,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
                 animationSet.start();
             }
         }
-        gameView.invalidate();
+        boardView.invalidate();
     }
 
     @Override
@@ -585,16 +541,16 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
      */
     private boolean checkValid(){
         boolean validity = false;
-        for(int i = 0; i < validPlaces.size(); i++){
-            if ((validPlaces.get(i).left <= touchedX ) && (validPlaces.get(i).top >= touchedY) && (validPlaces.get(i).right >= touchedX) && (validPlaces.get(i).bottom <= touchedY)){
+        for(int i = 0; i < validPlacesInGameboard.size(); i++){
+            if ((validPlacesInGameboard.get(i).left <= touchedX ) && (validPlacesInGameboard.get(i).top >= touchedY) && (validPlacesInGameboard.get(i).right >= touchedX) && (validPlacesInGameboard.get(i).bottom <= touchedY)){
                 validity = true;
-                placeInBoard = i+1;
-            } else if ((validPlaces.get(i).left <= touchedX ) && (validPlaces.get(i).top <= touchedY) && (validPlaces.get(i).right >= touchedX) && (validPlaces.get(i).bottom >= touchedY)){
+                placeClickedInBoard = i+1;
+            } else if ((validPlacesInGameboard.get(i).left <= touchedX ) && (validPlacesInGameboard.get(i).top <= touchedY) && (validPlacesInGameboard.get(i).right >= touchedX) && (validPlacesInGameboard.get(i).bottom >= touchedY)){
                 validity = true;
-                placeInBoard = i+1;
-            } else if ((validPlaces.get(i).left >= touchedX ) && (validPlaces.get(i).top >= touchedY) && (validPlaces.get(i).right <= touchedX) && (validPlaces.get(i).bottom <= touchedY)){
+                placeClickedInBoard = i+1;
+            } else if ((validPlacesInGameboard.get(i).left >= touchedX ) && (validPlacesInGameboard.get(i).top >= touchedY) && (validPlacesInGameboard.get(i).right <= touchedX) && (validPlacesInGameboard.get(i).bottom <= touchedY)){
                 validity = true;
-                placeInBoard = i+1;
+                placeClickedInBoard = i+1;
             }
         }
         return validity;
@@ -611,7 +567,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.right = validplace.left + 100;
         validplace.top =((((height/4) - (((height/4) - (height/4 + height/4 +50))/3) ) + height/2) /2)+50;
         validplace.bottom = validplace.top - 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //2
         validplace = new Rect();
@@ -619,7 +575,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.left = validplace.right + 100;
         validplace.top =((height/4) - (((height/4) - (height/4 + height/4 +50))/3))+75;
         validplace.bottom = validplace.top - 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //nr 3
         validplace = new Rect();
@@ -627,7 +583,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.top = height/4;
         validplace.right = validplace.left + 100;
         validplace.bottom = validplace.top + 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
         Log.d("center", "initHitboxesPortrait: X: " + validplace.centerX() + " Y: " + validplace.centerY());
         //4
         validplace = new Rect();
@@ -635,7 +591,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.right = validplace.left + 100;
         validplace.top =((((height/4) - (((height/4) - (height/4 + height/4 +50))/3) ) + height/2) /2)+50;
         validplace.bottom = validplace.top - 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //5
         validplace = new Rect();
@@ -643,7 +599,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.right = validplace.left + 100;
         validplace.top =((height/4) - (((height/4) - (height/4 + height/4 +50))/3))+75;
         validplace.bottom = validplace.top - 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //nr 6
         validplace = new Rect();
@@ -651,7 +607,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.top = height/4;
         validplace.right = validplace.left + 100;
         validplace.bottom = validplace.top + 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //7
         validplace = new Rect();
@@ -659,7 +615,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.right = validplace.left + 100;
         validplace.top =((((height/4) - (((height/4) - (height/4 + height/4 +50))/3) ) + height/2) /2)+50;
         validplace.bottom = validplace.top - 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //8
         validplace = new Rect();
@@ -667,7 +623,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.left = validplace.right -100;
         validplace.top =((height/4) - (((height/4) - (height/4 + height/4 +50))/3))+75;
         validplace.bottom = validplace.top - 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //nr 9
         validplace = new Rect();
@@ -675,7 +631,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.left = validplace.right -100;
         validplace.top = height/4;
         validplace.bottom = validplace.top + 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         // 10
         validplace = new Rect();
@@ -683,7 +639,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.right = validplace.left + 100;
         validplace.top = height/4 + height/4 +50;
         validplace.bottom = validplace.top - 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //11
         validplace = new Rect();
@@ -691,7 +647,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.left = validplace.right -100;
         validplace.top = height/4 + height/4 +50;
         validplace.bottom = validplace.top - 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //nr 12
         validplace = new Rect();
@@ -699,7 +655,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.left = validplace.right -100;
         validplace.top = height/4 + height/4 +50;
         validplace.bottom = validplace.top - 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //13
         validplace = new Rect();
@@ -707,7 +663,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.right = validplace.left + 100;
         validplace.top =(( ((height - height/4) - (((height - height/4) - (height/4 + height/4 +50))/3) ) + height/2) /2)+25;
         validplace.bottom = validplace.top - 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //14
         validplace = new Rect();
@@ -715,7 +671,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.left = validplace.right -100;
         validplace.top =((height - height/4) - (((height - height/4) - (height/4 + height/4 +50))/3));
         validplace.bottom = validplace.top - 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //15
         validplace = new Rect();
@@ -723,7 +679,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.left = validplace.right -100;
         validplace.top = height - height/4;
         validplace.bottom = validplace.top - 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //16
         validplace = new Rect();
@@ -731,7 +687,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.right = validplace.left + 100;
         validplace.top =(( ((height - height/4) - (((height - height/4) - (height/4 + height/4 +50))/3) ) + height/2) /2)+25;
         validplace.bottom = validplace.top - 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //17
         validplace = new Rect();
@@ -739,7 +695,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.right = validplace.left + 100;
         validplace.top =((height - height/4) - (((height - height/4) - (height/4 + height/4 +50))/3));
         validplace.bottom = validplace.top - 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //18
         validplace = new Rect();
@@ -747,7 +703,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.right = validplace.left + 100;
         validplace.top = height - height/4;
         validplace.bottom = validplace.top - 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //19
         validplace = new Rect();
@@ -755,7 +711,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.right = validplace.left + 100;
         validplace.top =((((height - height/4) - (((height - height/4) - (height/4 + height/4 +50))/3) ) + height/2) /2)+25;
         validplace.bottom = validplace.top - 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //20
         validplace = new Rect();
@@ -763,7 +719,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.left = validplace.right + 100;
         validplace.top =((height - height/4) - (((height - height/4) - (height/4 + height/4 +50))/3));
         validplace.bottom = validplace.top - 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //21
         validplace = new Rect();
@@ -771,7 +727,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.right = validplace.left + 100;
         validplace.top = height - height/4;
         validplace.bottom = validplace.top - 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //22
         validplace = new Rect();
@@ -779,7 +735,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.right = validplace.left + 100;
         validplace.top = height/4 + height/4 +50;
         validplace.bottom = validplace.top - 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //23
         validplace = new Rect();
@@ -787,7 +743,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.left = validplace.right + 100;
         validplace.top = height/4 + height/4 +50;
         validplace.bottom = validplace.top - 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //24
         validplace = new Rect();
@@ -795,7 +751,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.right = validplace.left + 100;
         validplace.top = height/4 + height/4 +50;
         validplace.bottom = validplace.top - 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
     }
 
@@ -810,7 +766,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.right = validplace.left + 100;
         validplace.top =(height/3) +50;
         validplace.bottom = validplace.top - 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
 
         //2
@@ -819,7 +775,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.right = validplace.left + 100;
         validplace.top =((height/8) - (((height/8) - (height/8 + height/8 -50))/3))+75;
         validplace.bottom = validplace.top - 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //3
         validplace = new Rect();
@@ -827,7 +783,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.right = validplace.left + 100;
         validplace.top = 25;
         validplace.bottom = validplace.top + 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
         Log.d("cancer", "initHitboxesLANDSCAPE: X: " + validplace.centerX() + " Y: " + validplace.centerY());
 
         //4
@@ -836,7 +792,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.right = validplace.left + 100;
         validplace.top =(height/3) +50;
         validplace.bottom = validplace.top - 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //5
         validplace = new Rect();
@@ -844,7 +800,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.right = validplace.left + 100;
         validplace.top =((height/8) - (((height/8) - (height/8 + height/8 -50))/3))+75;
         validplace.bottom = validplace.top - 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //6
         validplace = new Rect();
@@ -852,7 +808,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.right = validplace.left + 100;
         validplace.top = 25;
         validplace.bottom = validplace.top + 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //7
         validplace = new Rect();
@@ -860,7 +816,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.right = validplace.left + 100;
         validplace.top =(height/3) +50;
         validplace.bottom = validplace.top - 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //8
         validplace = new Rect();
@@ -868,7 +824,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.right = validplace.left + 100;
         validplace.top =((height/8) - (((height/8) - (height/8 + height/8 -50))/3))+75;
         validplace.bottom = validplace.top - 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //9
         validplace = new Rect();
@@ -876,7 +832,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.right = validplace.left + 100;
         validplace.top = 25;
         validplace.bottom = validplace.top + 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //10
         validplace = new Rect();
@@ -884,7 +840,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.right = validplace.left + 100;
         validplace.top = (int) (height*0.4) + 50;
         validplace.bottom = validplace.top + 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //11
         validplace = new Rect();
@@ -892,7 +848,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.right = validplace.left + 100;
         validplace.top = (int) (height*0.4) + 50;
         validplace.bottom = validplace.top + 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //12
         validplace = new Rect();
@@ -900,7 +856,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.right = validplace.left + 100;
         validplace.top = (int) (height*0.4) + 50;
         validplace.bottom = validplace.top + 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //13
         validplace = new Rect();
@@ -908,7 +864,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.right = validplace.left + 100;
         validplace.top = (int) (height*0.57);
         validplace.bottom = validplace.top + 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //14
         validplace = new Rect();
@@ -916,7 +872,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.right = validplace.left + 100;
         validplace.top = (int) (height*0.71);
         validplace.bottom = validplace.top + 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //15
         validplace = new Rect();
@@ -924,7 +880,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.right = validplace.left + 100;
         validplace.top = (int) (height*0.85);
         validplace.bottom = validplace.top + 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //16
         validplace = new Rect();
@@ -932,7 +888,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.right = validplace.left + 100;
         validplace.top = (int) (height*0.57);
         validplace.bottom = validplace.top + 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //17
         validplace = new Rect();
@@ -940,7 +896,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.right = validplace.left + 100;
         validplace.top = (int) (height*0.71);
         validplace.bottom = validplace.top + 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //18
         validplace = new Rect();
@@ -948,7 +904,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.right = validplace.left + 100;
         validplace.top = (int) (height*0.85);
         validplace.bottom = validplace.top + 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //19
         validplace = new Rect();
@@ -956,7 +912,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.right = validplace.left + 100;
         validplace.top = (int) (height*0.57);
         validplace.bottom = validplace.top + 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //20
         validplace = new Rect();
@@ -964,7 +920,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.right = validplace.left + 100;
         validplace.top = (int) (height*0.71);
         validplace.bottom = validplace.top + 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //21
         validplace = new Rect();
@@ -972,7 +928,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.right = validplace.left + 100;
         validplace.top = (int) (height*0.85);
         validplace.bottom = validplace.top + 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //22
         validplace = new Rect();
@@ -980,7 +936,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.right = validplace.left + 100;
         validplace.top = (int) (height*0.4) + 50;
         validplace.bottom = validplace.top + 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //23
         validplace = new Rect();
@@ -988,7 +944,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.right = validplace.left + 100;
         validplace.top = (int) (height*0.4) + 50;
         validplace.bottom = validplace.top + 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
         //nr 24
         validplace = new Rect();
@@ -996,7 +952,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         validplace.right = validplace.left + 100;
         validplace.top = (int) (height*0.4) + 50;
         validplace.bottom = validplace.top + 100;
-        validPlaces.add(validplace);
+        validPlacesInGameboard.add(validplace);
 
     }
 
