@@ -13,7 +13,7 @@
         android:layout_above="@+id/startButton"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="12dp"
-        android:text="Start menu"
+        android:text="@string/start_menu"
         android:textSize="40dp" />
 
     <Button
@@ -23,15 +23,14 @@
         android:layout_centerInParent="true"
         android:backgroundTint="@color/teal_700"
         android:text="@string/start"
-        android:textFontWeight="1"></Button>
+        android:textFontWeight="1"/>
 
     <Button
         android:id="@+id/loadButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="100dp"
-        android:layout_centerInParent="true"
+        android:layout_below="@+id/startButton"
+        android:layout_centerHorizontal="true"
         android:backgroundTint="@color/teal_700"
         android:text="@string/load_game"
         android:textFontWeight="1">

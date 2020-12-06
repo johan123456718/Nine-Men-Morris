@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.example.nine_men_morris.model.InternalFile;
 import com.example.nine_men_morris.model.NineMenMorrisRules;
@@ -40,6 +41,9 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
                         blueChecker8, redChecker8,
                         blueChecker9, redChecker9;
 
+    private TextView playerTurnText;
+    private TextView playerRemoveText;
+
     private ArrayList<ImageView> redCheckers, blueCheckers;
     private NineMenMorrisRules rules;
     private ArrayList<Rect> validPlaces;
@@ -64,7 +68,6 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
 
 
         internalFile = InternalFile.getInstance();
-        Log.d("center", "onCreate: " + imageScale);
 
         initCheckers();
 
@@ -74,6 +77,8 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         playerBlue = new Player(1); //Blue
         nrOfRemovedRedCheckers = 0;
         nrOfRemovedBlueCheckers = 0;
+        playerTurnText = findViewById(R.id.playerTurn);
+        playerRemoveText = findViewById(R.id.playerRemove);
 
         if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
             initHitboxesPortrait();
@@ -82,7 +87,6 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         }
 
         gameView = findViewById(R.id.drawView);
-        Log.d("cancer", "onCreate: ");
     }
 
     /**
@@ -101,7 +105,6 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         redCheckersViewModel.add(new checkerViewModel(redChecker1));
         blueCheckersViewModel.add(new checkerViewModel(blueChecker1));
         imageScale = redChecker1.getMeasuredHeight();
-        Log.d("center", "initCheckers: scalen: " + imageScale);
 
         blueChecker2 = findViewById(R.id.blueCheck2);
         redChecker2 = findViewById(R.id.redCheck2);
@@ -168,12 +171,11 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         internalFile.loadData(dir, playerBlue, playerRed, rules);
 
         gameView.setOnTouchListener(this);
-
         //if om värden != null
         rules.initAfterReload(playerRed, playerBlue);
         setCheckerStates();
         replaceCheckers();
-        Log.d("sex", "onStart: ");
+        printPlayerTurn();
     }
 
     /**
@@ -223,6 +225,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
                                 if(rules.remove(placeInBoard)){
                                     rules.setState(1);
                                     rules.setTurn(playerBlue.getColorID());
+                                    playerRemoveText.setText("Blue can remove");
                                 }
                             }
                         } else { // röd för palcera en checker innan 9
@@ -242,6 +245,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
                                 if(rules.remove(placeInBoard)){
                                     rules.setState(1);
                                     rules.setTurn(playerRed.getColorID());
+                                    playerRemoveText.setText("Red can remove");
                                 }
                             }
                         }
@@ -281,6 +285,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
                                     if(rules.remove(placeInBoard)){
                                         rules.setState(1);
                                         rules.setTurn(playerBlue.getColorID());
+                                        playerRemoveText.setText("Blue can remove");
                                     }
                                 }
                                 else {
@@ -329,6 +334,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
                                     if(rules.remove(placeInBoard)){
                                         rules.setState(1);
                                         rules.setTurn(playerRed.getColorID());
+                                        playerRemoveText.setText("Red can remove");
                                     }
                                 } else {
 
@@ -358,6 +364,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
                                             e.setDeleted(true);
                                             e.getCheckerId().setVisibility(View.INVISIBLE);
                                             playerRed.setNrOfRemovedCheckers(playerRed.getNrOfRemovedCheckers()+1);
+                                            playerRemoveText.setText("");
                                         }
                                     }
 
@@ -370,7 +377,6 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
                             }
                         }
                     } else if(rules.remove(placeInBoard) && (rules.getTurn() == playerRed.getColorID())){//Röd får ta bort en av blås cehckers
-
                         if(checkValid() && (rules.board(placeInBoard) == 4)){
 
                             for(int i = 0; i < playerBlue.getMoves().size(); i++) {
@@ -382,6 +388,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
                                             e.setDeleted(true);
                                             e.getCheckerId().setVisibility(View.INVISIBLE);
                                             playerBlue.setNrOfRemovedCheckers(playerBlue.getNrOfRemovedCheckers()+1);
+                                            playerRemoveText.setText("");
                                         }
                                     }
 
@@ -414,6 +421,7 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
                         }
                     }).show();
                 }
+                printPlayerTurn();
                 return true;
 
             default:
@@ -558,6 +566,17 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
             return true;
         }
         else return false;
+    }
+
+    /**
+     * Helper method to print out who turn it's
+     */
+    private void printPlayerTurn(){
+        if(rules.getTurn() == playerRed.getColorID()) {
+            playerTurnText.setText("Red's turn");
+        }else if(rules.getTurn() == playerBlue.getColorID()){
+            playerTurnText.setText("Blue's turn");
+        }
     }
 
     /**
