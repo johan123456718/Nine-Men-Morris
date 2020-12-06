@@ -10,7 +10,7 @@
     android:focusableInTouchMode="true"
     tools:context=".GameActivity">
 
-    <com.example.nine_men_morris.GameView
+    <com.example.nine_men_morris.BoardView
         android:id="@+id/drawView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

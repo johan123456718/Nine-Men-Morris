@@ -2,13 +2,16 @@ package com.example.nine_men_morris;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 
 import gr.net.maroulis.library.EasySplashScreen;
 
+/**
+ * Model for the splashScreen.
+ */
 public class SplashScreen extends AppCompatActivity {
 
     @Override
@@ -19,13 +22,13 @@ public class SplashScreen extends AppCompatActivity {
         EasySplashScreen splashScreenConfig = new EasySplashScreen(SplashScreen.this)
                         .withFullScreen()
                         .withTargetActivity(MainActivity.class)
-                        .withSplashTimeOut(1000)
+                        .withSplashTimeOut(1500)
                         .withBackgroundColor(Color.parseColor("#1a1b29"))
-                        .withHeaderText("Header")
-                        .withFooterText("Footer")
-                        .withBeforeLogoText("Before logo text")
-                        .withAfterLogoText("After logo text")
-                        .withLogo(R.mipmap.ic_launcher_round)
+                        .withHeaderText("")
+                        .withFooterText("")
+                        .withBeforeLogoText("Nine Men's Morris")
+                        .withAfterLogoText("Loading...")
+                        .withLogo(R.mipmap.nine_morris_image_round)
                         .withTargetActivity(GameActivity.class);
 
         splashScreenConfig.getHeaderTextView().setTextColor(Color.WHITE);

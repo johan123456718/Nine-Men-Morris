@@ -4,6 +4,9 @@ package com.example.nine_men_morris.model;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+/**
+ * Class modeling a player
+ */
 public class Player implements Serializable {
 
     private int colorID;

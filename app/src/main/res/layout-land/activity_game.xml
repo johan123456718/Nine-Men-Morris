@@ -12,7 +12,7 @@
     android:background="@color/fin">
 
 
-    <com.example.nine_men_morris.GameView
+    <com.example.nine_men_morris.BoardView
         android:id="@+id/drawView"
         android:layout_width="0dp"
         android:layout_height="match_parent"
@@ -36,7 +36,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@color/black"
-        android:textSize="12sp"
+        android:textSize="15sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/drawView"
         app:layout_constraintTop_toTopOf="parent" />
